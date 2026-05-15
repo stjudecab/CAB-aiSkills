@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="../assets/CAB-aiSkills_tables-to-excel.svg" alt="tables-to-excel skill badge" width="520" />
+  <img src="assets/CAB-aiSkills_tables-to-excel.svg" alt="tables-to-excel skill badge" width="520" />
 </p>
 
 # Tables to Excel — Agent Skill
@@ -72,6 +72,7 @@ python scripts/tables_to_excel.py -i data.csv -o out/run --logLevel DEBUG
 
 | Path | Role |
 |------|------|
+| [assets/](assets/) | CAB aiSkills logo and this skill’s badge (for standalone README rendering) |
 | [SKILL.md](SKILL.md) | When to use, workflow, safety, outputs |
 | [scripts/tables_to_excel.py](scripts/tables_to_excel.py) | CLI entrypoint |
 | [scripts/logging_support.py](scripts/logging_support.py) | Logging helpers |

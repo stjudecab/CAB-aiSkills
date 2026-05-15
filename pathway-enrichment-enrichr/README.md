@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="../assets/CAB-aiSkills_pathway-enrichment-enrichr.svg" alt="pathway-enrichment-enrichr skill badge" width="520" />
+  <img src="assets/CAB-aiSkills_pathway-enrichment-enrichr.svg" alt="pathway-enrichment-enrichr skill badge" width="520" />
 </p>
 
 # Pathway enrichment (Enrichr) — Agent Skill
@@ -71,6 +71,7 @@ The helper builds a temporary GMT under the run folder, then runs the same pipel
 
 ## Layout
 
+- [assets/](assets/) — CAB aiSkills logo and this skill’s badge (for standalone README rendering)
 - [SKILL.md](SKILL.md) — when to use, agent workflow, outputs
 - [scripts/run_pathway_enrichment.py](scripts/run_pathway_enrichment.py) — recommended entrypoint
 - [scripts/enrichr_api.py](scripts/enrichr_api.py) — Enrichr client and GMT batch logic

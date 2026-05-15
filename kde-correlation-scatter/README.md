@@ -1,6 +1,9 @@
+<p align="center">
+  <img src="assets/CAB-aiSkills_logo.svg" alt="CAB aiSkills" width="400" />
+</p>
 
 <p align="center">
-  <img src="../assets/CAB-aiSkills_kde-correlation-scatter.svg" alt="kde-correlation-scatter skill badge" width="520" />
+  <img src="assets/CAB-aiSkills_kde-correlation-scatter.svg" alt="kde-correlation-scatter skill badge" width="520" />
 </p>
 
 # KDE Correlation Scatter — Agent Skill
@@ -114,6 +117,7 @@ When a user asks for a 2D scatter or KDE correlation plot, the agent:
 
 | Path | Role |
 |------|------|
+| [assets/](assets/) | CAB aiSkills logo and this skill’s badge (for standalone README rendering) |
 | [SKILL.md](SKILL.md) | Agent instructions: when to use, workflow, safety, outputs |
 | [scripts/plot_kde_correlation.py](scripts/plot_kde_correlation.py) | CLI: read two differential files, merge, correlate, produce scatter plots |
 | [references/column-identification.md](references/column-identification.md) | Auto-detection rules for column roles (metric, significance, identifier) |
