@@ -24,12 +24,12 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      inkscape:zoom="0.67740656"
-     inkscape:cx="510.03344"
+     inkscape:cx="509.29533"
      inkscape:cy="47.238987"
      inkscape:window-width="2080"
      inkscape:window-height="845"
      inkscape:window-x="2081"
-     inkscape:window-y="425"
+     inkscape:window-y="397"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer1" /><defs
      id="defs1"><rect
@@ -85,10 +85,8 @@
        transform="matrix(0.26458333,0,0,0.26458333,9.7052117,110.72922)"
        id="text8"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:53.3333px;line-height:1;font-family:'Helvetica Neue';-inkscape-font-specification:'Helvetica Neue Bold';text-align:center;white-space:pre;shape-inside:url(#rect9);fill:#042755;fill-opacity:1;stroke-width:4;stroke-linecap:round;stroke-linejoin:round"
-       x="-293.89264"
+       x="293.89264"
        y="0"><tspan
          x="96.929457"
          y="171.95031"
-         id="tspan5"><tspan
-           style="text-anchor:middle"
-           id="tspan2">kde-correlation-scatter</tspan></tspan></text></g></svg>
+         id="tspan1">kde-correlation-scatter</tspan></text></g></svg>
