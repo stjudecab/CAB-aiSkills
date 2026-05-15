@@ -1,0 +1,4 @@
+protein,log2FC,p_value
+GENE1,1.25,0.03
+GENE2,-0.80,0.21
+GENE3,0.05,0.94

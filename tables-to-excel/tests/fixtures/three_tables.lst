@@ -1,0 +1,4 @@
+# Fixture bundle: one CSV, one TSV, one tab-separated .txt (same delimiter rules as TSV)
+sample_alpha.csv
+sample_beta.tsv
+sample_gamma.txt

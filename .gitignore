@@ -1,0 +1,45 @@
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Type checkers / linters (if added later)
+.mypy_cache/
+.ruff_cache/
+.pytype/
+
+# Packaging
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Local env / secrets (never commit)
+.env
+.env.*
+
+# Tooling / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Run artifacts from skill scripts (regenerated locally)
+*.log
+agentResults/
+
+# Jupyter (if used for exploration)
+.ipynb_checkpoints/

@@ -1,0 +1,4 @@
+sample_id	condition	read_count
+S01	control	1024
+S02	treated	2048
+S03	treated	1850
