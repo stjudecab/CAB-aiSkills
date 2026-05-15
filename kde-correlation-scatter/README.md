@@ -1,8 +1,7 @@
-<div align="center">
-  <img src="../assets/CAB-aiSkills_logo.svg" alt="CAB aiSkills" width="440" style="display: block; margin-left: auto; margin-right: auto; margin-bottom: 4px;" />
-  <!-- GitHub README strips inline CSS on div/span; title is an SVG so 20px bold #042755 renders reliably -->
-  <img src="assets/readme-skill-title.svg" alt="kde-correlation-scatter" width="560" height="36" style="display: block; margin-left: auto; margin-right: auto;" />
-</div>
+
+<p align="center">
+  <img src="assets/CAB-aiSkills_kde-correlation-scatter.svg" alt="kde-correlation-scatter skill badge" width="520" />
+</p>
 
 # KDE Correlation Scatter — Agent Skill
 
@@ -115,7 +114,7 @@ When a user asks for a 2D scatter or KDE correlation plot, the agent:
 
 | Path | Role |
 |------|------|
-| [assets/](assets/) | `readme-skill-title.svg` (README title; GitHub strips HTML `style`, so typography is in SVG), CAB logo copy + badge SVG for packaging; README header logo from repo [`../assets/CAB-aiSkills_logo.svg`](../assets/CAB-aiSkills_logo.svg) |
+| [assets/](assets/) | CAB aiSkills logo and this skill’s badge (for standalone README rendering) |
 | [SKILL.md](SKILL.md) | Agent instructions: when to use, workflow, safety, outputs |
 | [scripts/plot_kde_correlation.py](scripts/plot_kde_correlation.py) | CLI: read two differential files, merge, correlate, produce scatter plots |
 | [references/column-identification.md](references/column-identification.md) | Auto-detection rules for column roles (metric, significance, identifier) |
