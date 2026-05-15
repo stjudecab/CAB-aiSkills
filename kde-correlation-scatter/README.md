@@ -1,10 +1,7 @@
-<p align="center">
-  <img src="../assets/CAB-aiSkills_logo.svg" alt="CAB aiSkills" width="440" />
-</p>
-
-<p align="center">
-  <span style="font-size: 20px; font-weight: bold; color: #042755;">kde-correlation-scatter</span>
-</p>
+<div align="center">
+  <img src="../assets/CAB-aiSkills_logo.svg" alt="CAB aiSkills" width="440" style="display: block; margin-left: auto; margin-right: auto; margin-bottom: 4px;" />
+  <div style="font-size: 20px; font-weight: 700; color: #042755; line-height: 1.2; margin: 0; padding: 0;">kde-correlation-scatter</div>
+</div>
 
 # KDE Correlation Scatter — Agent Skill
 
