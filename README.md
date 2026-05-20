@@ -6,7 +6,7 @@
 
 Portable **agent skills** (filesystem-discoverable folders with `SKILL.md` and tooling) for bioinformatics and omics workflows: each skill is a self-contained folder with `SKILL.md` (what the agent does), runnable scripts, and documentation. Install by copying or symlinking a skill into your client’s skill path (for example `.cursor/skills/<skill-name>/` in Cursor).
 
-**Maintained by:** [Wojciech Rosikiewicz](AUTHORS.md) (St Jude Children's Research Hospital). Per-skill and per-script credits: [AUTHORS.md](AUTHORS.md).
+**Maintained by:** [Wojciech Rosikiewicz](AUTHORS.md) (Center for Applied Bioinformatics, St Jude Children's Research Hospital). Per-skill and per-script credits: [AUTHORS.md](AUTHORS.md).
 
 **License:** [CC BY-NC-SA 4.0](LICENSE.txt) (Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International).
 
