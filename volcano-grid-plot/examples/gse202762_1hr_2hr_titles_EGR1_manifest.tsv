@@ -1,0 +1,3 @@
+inputFile	sampleLabel
+examples/GSE202762.DMSO_EGF_1hr_vs_DMSO_UT.regulation.tsv	EGF 1h vs DMSO UT
+examples/GSE202762.DMSO_EGF_2hr_vs_DMSO_UT.regulation.tsv	EGF 2h vs DMSO UT

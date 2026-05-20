@@ -1,0 +1,6 @@
+inputFile	sampleLabel
+examples/GSE202762.DMSO_EGF_10min_vs_DMSO_UT.regulation.tsv	10min
+examples/GSE202762.DMSO_EGF_20min_vs_DMSO_UT.regulation.tsv	20min
+examples/GSE202762.DMSO_EGF_1hr_vs_DMSO_UT.regulation.tsv	1hr
+examples/GSE202762.DMSO_EGF_2hr_vs_DMSO_UT.regulation.tsv	2hr
+examples/GSE202762.DMSO_EGF_4hr_vs_DMSO_UT.regulation.tsv	4hr

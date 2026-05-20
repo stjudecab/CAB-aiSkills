@@ -32,4 +32,10 @@ Builds **publication-style 2D scatter plots with KDE density** comparing two dif
 
 **Example prompt:** *Make a KDE correlation scatter comparing `contrast_A.regulation.tsv` and `contrast_B.regulation.tsv` using directional p-values; write figures under `./plots`.*
 
+---
 
+### [volcano-grid-plot](volcano-grid-plot/README.md)
+
+Builds **publication-ready grids of Volcano and/or MA plots** from multiple differential RNA-seq or differential binding tables, with shared axis limits, optional gene highlighting, and column-name harmonization guidance.
+
+**Example prompt:** *Plot GSE202762 EGF timepoints from "volcano-grid-plot/examples" directory in natural order as a volcano grid plot. Highlight EGR1 on volcano and MA figures.*
