@@ -1,3 +1,16 @@
+#!/usr/bin/env python3
+#########################################################################
+# Copyright (c) 2023-~ Wojciech Rosikiewicz && St Jude
+#
+# This source code is released for free distribution under the terms of the
+# CreativeCommons BY-NC-SA 4.0 International License
+#
+#*Author:       Wojciech Rosikiewicz < rosikiewicz [at] gmail DOT com >
+# File Name: plot_kde_correlation.py
+# Description:
+# 2D scatter / KDE correlation plots for two differential experiment tables.
+#########################################################################
+
 import pandas as pd
 # import sys
 import glob, os

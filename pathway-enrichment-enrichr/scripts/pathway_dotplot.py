@@ -1,4 +1,16 @@
 #!/usr/bin/env python
+#########################################################################
+# Copyright (c) 2026-~ Wojciech Rosikiewicz && St Jude
+#
+# This source code is released for free distribution under the terms of the
+# CreativeCommons BY-NC-SA 4.0 International License
+#
+#*Author:       Wojciech Rosikiewicz < rosikiewicz [at] gmail DOT com >
+# File Name: pathway_dotplot.py
+# Description:
+# Dot plot for pathway enrichment tables aligned across samples.
+#########################################################################
+
 """Dot plot for pathway enrichment tables aligned across samples."""
 
 from __future__ import annotations

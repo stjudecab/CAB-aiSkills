@@ -8,13 +8,13 @@ description: >-
   quadrant counts. Use when the user asks to plot a 2D scatter, KDE correlation,
   directional p-value plot, rank-rank correlation, or compare two differential
   gene-expression / differential-binding result files.
-license: Apache-2.0
+license: CC-BY-NC-SA-4.0
 compatibility: >-
   Requires Python 3.9+ with pandas, numpy, scipy, matplotlib, seaborn;
   pybedtools required only for region2region or rank2rank with genomic regions.
   Local filesystem only; no network access required.
 metadata:
-  author: kde-correlation-scatter maintainers
+  author: Wojciech Rosikiewicz <rosikiewicz@gmail.com>
   version: "1.0.0"
   status: stable
   last_reviewed: "2026-05-13"

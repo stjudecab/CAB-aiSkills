@@ -2,11 +2,11 @@
 name: pathway-enrichment-enrichr
 description: >-
   Runs Pathway Enrichment via the public Enrichr API for one gene list or many lists (GMT file or TSV manifest), writes formatted Excel summaries and PDF bar plots for top pathways, and for multi-list runs produces combined summary tables, heatmaps, and dot plots consistent with the enrichr_api GMT workflow. Use when the user asks for Enrichr pathway enrichment, GO/KEGG/Reactome enrichment tables, GMT batch enrichment, multi-sample pathway dot plots or heatmaps, or exporting enrichment results to Excel/PDF.
-license: Apache-2.0
+license: CC-BY-NC-SA-4.0
 compatibility: >-
   Requires Python 3.9+ with pandas, numpy, requests, matplotlib, seaborn, xlsxwriter; optional rich for pathway_dotplot logging. Needs outbound HTTPS network access to maayanlab.cloud (Enrichr). Writes outputs under a user-specified directory (timestamped run folder by default).
 metadata:
-  author: newSkills maintainers
+  author: Wojciech Rosikiewicz <rosikiewicz@gmail.com>
   version: "1.0.0"
   status: stable
   last_reviewed: "2026-05-01"

@@ -7,12 +7,12 @@ description: >-
   log2FC, p-value/FDR, gene/region IDs, and average expression; highlight genes
   of interest. Use when the user asks for volcano plot grids, MA plot grids,
   multi-panel DE figures, or timecourse differential visualization.
-license: Apache-2.0
+license: CC-BY-NC-SA-4.0
 compatibility: >-
   Requires Python 3.9+ with pandas, numpy, matplotlib, seaborn. Local filesystem
   only; no network access required.
 metadata:
-  author: volcano-grid-plot maintainers
+  author: Wojciech Rosikiewicz <rosikiewicz@gmail.com>
   version: "1.0.0"
   status: stable
   last_reviewed: "2026-05-19"

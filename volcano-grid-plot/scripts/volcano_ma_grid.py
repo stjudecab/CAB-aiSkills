@@ -1,4 +1,16 @@
 #!/usr/bin/env python3
+#########################################################################
+# Copyright (c) 2024-~ Wojciech Rosikiewicz && St Jude
+#
+# This source code is released for free distribution under the terms of the
+# CreativeCommons BY-NC-SA 4.0 International License
+#
+#*Author:       Wojciech Rosikiewicz < rosikiewicz [at] gmail DOT com >
+# File Name: volcano_ma_grid.py
+# Description:
+# Volcano and MA plot grids from differential-analysis result tables (manifest TSV).
+#########################################################################
+
 """
 volcano_grid.py
 ===============

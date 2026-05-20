@@ -2,11 +2,11 @@
 name: tables-to-excel
 description: >-
   Merge CSV, TSV, or tab-delimited TXT tables into one multi-sheet .xlsx workbook with a first-sheet NameDictionary mapping each worksheet name to the absolute path of its source file. Use when consolidating DEG tables, gene lists, QC summaries, or any flat tables for a shareable Excel bundle with auditability; when avoiding manual copy-paste into Excel; or when the user asks for multi-sheet Excel from several TSV/CSV files with traceable provenance.
-license: Apache-2.0
+license: CC-BY-NC-SA-4.0
 compatibility: >-
   Requires Python 3.10+, pandas, openpyxl, rich, packaging. Local filesystem read/write only; no network. Writes one .xlsx and a tables_to_excel.log in the process working directory unless logging is reconfigured.
 metadata:
-  author: SKILL_merge_tables maintainers
+  author: Wojciech Rosikiewicz <rosikiewicz@gmail.com>
   version: "1.0.0"
   status: stable
   last_reviewed: "2026-05-08"

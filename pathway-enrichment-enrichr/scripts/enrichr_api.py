@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 #########################################################################
 # Copyright (c) 2016-~ Beisi Xu && St Jude
+# Contributions (c) 2020-~ Wojciech Rosikiewicz && St Jude
 # 
 # This source code is released for free distribution under the terms of the
 # CreativeCommons BY-NC-SA 4.0 International License
 # 
-#*Author:       Beisi Xu < xubeisi [at] gmail DOT com >
+# Authors: Beisi Xu < xubeisi [at] gmail DOT com >, Wojciech Rosikiewicz < rosikiewicz [at] gmail DOT com >   
 # File Name: enrichr_api.py
 # Description:
 # example usage for single gene set test: enrichr_api.py -a gene.sym -t stjudemm -o Pathway_gene -m api,sum 

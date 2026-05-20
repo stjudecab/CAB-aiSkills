@@ -1,3 +1,15 @@
+#########################################################################
+# Copyright (c) 2026-~ Wojciech Rosikiewicz && St Jude
+#
+# This source code is released for free distribution under the terms of the
+# CreativeCommons BY-NC-SA 4.0 International License
+#
+#*Author:       Wojciech Rosikiewicz < rosikiewicz [at] gmail DOT com >
+# File Name: logging_support.py
+# Description:
+# Shared Rich console and file logging helpers for tables-to-excel CLI scripts.
+#########################################################################
+
 """Shared Rich console + plain file logging helpers for ExcelBuilder CLI scripts."""
 
 from __future__ import annotations

@@ -157,4 +157,4 @@ python scripts/plot_kde_correlation.py --help
 
 ## License
 
-Packaging and skill text: **Apache-2.0** (see [SKILL.md](SKILL.md) frontmatter).
+Packaging, documentation, and scripts: **[CC BY-NC-SA 4.0](../LICENSE.txt)**. See [AUTHORS.md](../AUTHORS.md) and [SKILL.md](SKILL.md) frontmatter.

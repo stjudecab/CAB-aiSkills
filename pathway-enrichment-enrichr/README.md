@@ -90,4 +90,4 @@ python -m pytest tests/
 
 ## License
 
-New orchestration and packaging files in this skill are provided under **Apache-2.0** (see [SKILL.md](SKILL.md)). The bundled `enrichr_api.py` retains its original upstream notice in-file.
+Skill packaging and orchestration scripts: **[CC BY-NC-SA 4.0](../LICENSE.txt)** (see [AUTHORS.md](../AUTHORS.md) and [SKILL.md](SKILL.md)). The bundled `enrichr_api.py` retains its original upstream notice (Beisi Xu && St Jude) in-file.

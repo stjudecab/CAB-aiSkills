@@ -1,4 +1,16 @@
 #!/usr/bin/env python
+#########################################################################
+# Copyright (c) 2026-~ Wojciech Rosikiewicz && St Jude
+#
+# This source code is released for free distribution under the terms of the
+# CreativeCommons BY-NC-SA 4.0 International License
+#
+#*Author:       Wojciech Rosikiewicz < rosikiewicz [at] gmail DOT com >
+# File Name: run_pathway_enrichment.py
+# Description:
+# Unified CLI for Enrichr pathway enrichment (single list, GMT batch, or manifest).
+#########################################################################
+
 """Unified CLI for Enrichr pathway enrichment (single list, GMT batch, or gene-list manifest)."""
 
 from __future__ import annotations

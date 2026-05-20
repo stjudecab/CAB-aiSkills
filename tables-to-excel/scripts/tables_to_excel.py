@@ -1,4 +1,16 @@
 #!/usr/bin/env python3
+#########################################################################
+# Copyright (c) 2026-~ Wojciech Rosikiewicz && St Jude
+#
+# This source code is released for free distribution under the terms of the
+# CreativeCommons BY-NC-SA 4.0 International License
+#
+#*Author:       Wojciech Rosikiewicz < rosikiewicz [at] gmail DOT com >
+# File Name: tables_to_excel.py
+# Description:
+# Merge CSV/TSV/TXT tables into one multi-sheet Excel workbook with NameDictionary sheet.
+#########################################################################
+
 """Merge tabular files into one multi-sheet Excel workbook with a path map sheet.
 
 This module provides a CLI that reads CSV, TSV, or TXT tables and writes them to

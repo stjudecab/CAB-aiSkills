@@ -1,4 +1,16 @@
 #!/usr/bin/env python
+#########################################################################
+# Copyright (c) 2025-~ Wojciech Rosikiewicz && St Jude
+#
+# This source code is released for free distribution under the terms of the
+# CreativeCommons BY-NC-SA 4.0 International License
+#
+#*Author:       Wojciech Rosikiewicz < rosikiewicz [at] gmail DOT com >
+# File Name: enrichment_postprocess.py
+# Description:
+# Post-processing for single-sample Enrichr outputs (Excel summaries and bar plots).
+#########################################################################
+
 """Post-processing for single-sample Enrichr outputs: Excel summaries and bar plots."""
 
 from __future__ import annotations
