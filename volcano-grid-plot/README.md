@@ -32,7 +32,7 @@ Single-row volcano grid; panel titles follow treatment time (`sampleLabel` in th
 
 **Prompt:** *Plot a volcano grid for all GSE202762 EGF timepoints in natural chronological order (10min, 20min, 1hr, 2hr, 4hr).*
 
-![GSE202762 EGF timecourse volcano grid](examples/figures/example_timecourse_natural_order.png)
+<img src="examples/figures/example_timecourse_natural_order.png" alt="GSE202762 EGF timecourse volcano grid" width="640" />
 
 Manifest: [examples/gse202762_timecourse_manifest.tsv](examples/gse202762_timecourse_manifest.tsv)
 
@@ -43,21 +43,19 @@ python scripts/volcano_ma_grid.py examples/gse202762_timecourse_manifest.tsv out
   --rows 1
 ```
 
-### Custom panel titles and EGR1 highlight (1h & 2h)
+### Custom panel titles and EGR1 highlight — MA plot (1h & 2h)
 
-Volcano and MA grids in one column × two rows; `sampleLabel` sets readable contrast titles; **EGR1** labeled on both plot types.
+MA grid only (one column × two rows); `sampleLabel` sets readable contrast titles; **EGR1** labeled on each panel.
 
-**Prompt:** *Volcano and MA grids for GSE202762 1h and 2h with clear contrast titles; highlight EGR1.*
+**Prompt:** *MA grid for GSE202762 1h and 2h with clear contrast titles; highlight EGR1.*
 
-![Volcano grid with EGR1 labels](examples/figures/example_titles_EGR1_volcano.png)
-
-![MA grid with EGR1 labels](examples/figures/example_titles_EGR1_MA.png)
+<img src="examples/figures/example_titles_EGR1_MA.png" alt="MA grid with EGR1 labels" width="360" />
 
 Manifest: [examples/gse202762_1hr_2hr_titles_EGR1_manifest.tsv](examples/gse202762_1hr_2hr_titles_EGR1_manifest.tsv)
 
 ```bash
 python scripts/volcano_ma_grid.py examples/gse202762_1hr_2hr_titles_EGR1_manifest.tsv out/EGR1_demo \
-  --plotsToPlot volcano,ma \
+  --plotsToPlot ma \
   --fcCol log2FC --sigCol FDR --nameCol geneSymbol --aveExprCol AveExpr \
   --cols 1 --rows 2 \
   --labelPoints EGR1
@@ -103,7 +101,7 @@ Example prompts a user might type and how the agent should interpret them. See [
 | User prompt | Interpretation |
 |---|---|
 | "Plot GSE202762 EGF timepoints in natural order as one volcano row" | Manifest 10min→4hr; `gse202762_timecourse_manifest.tsv`; `--rows 1`; short `sampleLabel` titles |
-| "Volcano and MA for 1h and 2h with clear titles; highlight EGR1" | `gse202762_1hr_2hr_titles_EGR1_manifest.tsv`; `--cols 1 --rows 2 --labelPoints EGR1` |
+| "MA grid for 1h and 2h with clear titles; highlight EGR1" | `gse202762_1hr_2hr_titles_EGR1_manifest.tsv`; `--plotsToPlot ma --cols 1 --rows 2 --labelPoints EGR1` |
 | "Make a volcano grid with two columns and one row from these regulation tables" | Build manifest; `--plotsToPlot volcano --cols 2 --rows 1`; detect `log2FC`, `FDR`, `geneSymbol` |
 | "Volcano grid for all my *regulation.tsv DEG files in this folder" | Inventory contrasts → user-ordered manifest → auto-detect columns → run grid |
 | "Compare many RNA-seq contrasts in a large volcano/MA grid" | Large manifest; set `--cols` / `--rows`; shared axes; explicit column flags |

@@ -12,15 +12,15 @@
 4. Run `--plotsToPlot volcano --rows 1` (five columns auto).
 5. Outputs: `*.volcanoGrid.pdf` and `.png`.
 
-## Custom titles and EGR1 — volcano + MA
+## Custom titles and EGR1 — MA only
 
-**User:** Volcano and MA grids for GSE202762 1h and 2h with readable contrast titles; highlight EGR1.
+**User:** MA grid for GSE202762 1h and 2h with readable contrast titles; highlight EGR1.
 
 **Expected:**
 
 - [gse202762_1hr_2hr_titles_EGR1_manifest.tsv](gse202762_1hr_2hr_titles_EGR1_manifest.tsv) with titles such as `EGF 1h vs DMSO UT`.
-- `--plotsToPlot volcano,ma --cols 1 --rows 2 --labelPoints EGR1 --aveExprCol AveExpr`.
-- Both `volcanoGrid` and `MAgrid` artifacts; log confirms EGR1 found in each panel.
+- `--plotsToPlot ma --cols 1 --rows 2 --labelPoints EGR1 --aveExprCol AveExpr`.
+- `MAgrid` artifact only; log confirms EGR1 found in each panel.
 
 ## Two-panel volcano 2×1
 
