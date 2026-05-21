@@ -75,7 +75,18 @@ Run a reproducible Enrichr-based pathway enrichment analysis and generate the sa
 - Large GMT batches can be **slow** and **rate-limited**; keep runs scoped.
 - Result interpretation (biology) is out of scope unless the user asks for a readout of the tables only.
 
+## Attribution
+
+Report credits in **three layers** (see [references/citations.md](references/citations.md) and [docs/attribution.md](../docs/attribution.md)):
+
+1. **Method:** **Enrichr** web service — Kuleshov et al., *NAR* 2016 (primary); Chen et al., *BMC Bioinformatics* 2013 (original tool).
+2. **Bundled API client:** `enrichr_api.py` — **Beisi Xu** (primary author per file header); contributions from Wojciech Rosikiewicz as noted in-header.
+3. **Skill package:** CAB-aiSkills `pathway-enrichment-enrichr` — credit **skill author(s)** from [AUTHORS.md](../AUTHORS.md) and `metadata.author` in this file (orchestration only; **not** Enrichr).
+
+`run_metadata.json` includes `citation_keys` and an `attribution` block. Do not cite the skill packager as the author of Enrichr.
+
 ## Further reading
 
+- [references/citations.md](references/citations.md) — layered attribution and copy-paste citations.
 - Method and file-format notes: [references/methods.md](references/methods.md)
 - Human-oriented install and command examples: [README.md](README.md)

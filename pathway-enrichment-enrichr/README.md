@@ -77,6 +77,7 @@ The helper builds a temporary GMT under the run folder, then runs the same pipel
 - [scripts/enrichr_api.py](scripts/enrichr_api.py) — Enrichr client and GMT batch logic
 - [scripts/pathway_dotplot.py](scripts/pathway_dotplot.py) — cross-sample dot plots (GMT batch)
 - [references/methods.md](references/methods.md) — formats and behavior details
+- [references/citations.md](references/citations.md) — layered attribution (Enrichr, enrichr_api.py, skill)
 - [examples/](examples/) — minimal manifest / gene list samples
 
 ## Testing
@@ -87,6 +88,22 @@ From this directory:
 python scripts/run_pathway_enrichment.py --help
 python -m pytest tests/
 ```
+
+## Citation
+
+Use [layered attribution](../docs/attribution.md).
+
+| Layer | Credit |
+|-------|--------|
+| **Skill package** | Skill author(s) in [AUTHORS.md](../AUTHORS.md); CAB-aiSkills `pathway-enrichment-enrichr` |
+| **Bundled API client** | `enrichr_api.py` — **Beisi Xu** (primary); contributions Wojciech Rosikiewicz (see file header) |
+| **Method** | **Enrichr** — Kuleshov MV, et al. *Nucleic Acids Res* 2016 ([doi:10.1093/nar/gkw377](https://doi.org/10.1093/nar/gkw377)); Chen EY, et al. *BMC Bioinformatics* 2013 ([doi:10.1186/1471-2105-14-128](https://doi.org/10.1186/1471-2105-14-128)) |
+
+Full wording: [references/citations.md](references/citations.md).
+
+**Methods (one sentence):**
+
+> Pathway enrichment used Enrichr (Kuleshov et al., 2016; Chen et al., 2013) via the Ma'ayan Lab API, with the bundled `enrichr_api.py` client (authors per file header) and CAB-aiSkills orchestration (skill author(s) per [AUTHORS.md](../AUTHORS.md)).
 
 ## License
 

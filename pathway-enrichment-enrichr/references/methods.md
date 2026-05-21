@@ -8,6 +8,7 @@
 - [Manifest column aliases](#manifest-column-aliases)
 - [Naming constraints](#naming-constraints)
 - [Dependencies and API](#dependencies-and-api)
+- [Attribution and citations](#attribution-and-citations)
 
 ## Input modes
 
@@ -50,3 +51,7 @@ Each file should contain one gene symbol per line (tokens before the first white
 - **`xlsxwriter`** is required for Excel outputs.
 
 For command examples, see [README.md](../README.md).
+
+## Attribution and citations
+
+Layered credits (skill author(s) vs `enrichr_api.py` vs Enrichr publications) are in [citations.md](citations.md) and [docs/attribution.md](../../docs/attribution.md). Cite **Enrichr** (Kuleshov et al., 2016; Chen et al., 2013) for enrichment science; cite **`enrichr_api.py` authors** per file header (Beisi Xu, plus contributors named there); cite **CAB-aiSkills skill author(s)** per [AUTHORS.md](../../AUTHORS.md) for workflow packaging only.

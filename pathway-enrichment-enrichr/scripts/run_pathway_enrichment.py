@@ -236,6 +236,23 @@ def main(argv: list[str] | None = None) -> int:
         "library_preset": args.libraryPreset,
         "engine": args.engine,
         "run_root": str(run_root),
+        "attribution": {
+            "skill_packager": (
+                "CAB-aiSkills pathway-enrichment-enrichr skill author(s); "
+                "see AUTHORS.md and SKILL.md metadata"
+            ),
+            "bundled_api_client": "enrichr_api.py (Beisi Xu; see file header)",
+            "method": (
+                "Enrichr web service (Kuleshov et al., NAR 2016; Chen et al., BMC Bioinformatics 2013)"
+            ),
+            "citations_doc": "references/citations.md",
+        },
+        "citation_keys": [
+            "enrichr_kuleshov_2016_nar",
+            "enrichr_chen_2013_bmc",
+            "enrichr_api_xu_stjude",
+            "cab_aiskills_pathway_enrichment_enrichr",
+        ],
     }
 
     if args.outPrefix and not prefixAllowed(args.outPrefix):

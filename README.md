@@ -6,7 +6,9 @@
 
 Portable **agent skills** (filesystem-discoverable folders with `SKILL.md` and tooling) for bioinformatics and omics workflows: each skill is a self-contained folder with `SKILL.md` (what the agent does), runnable scripts, and documentation. Install by copying or symlinking a skill into your client’s skill path (for example `.cursor/skills/<skill-name>/` in Cursor).
 
-**Maintained by:** [Wojciech Rosikiewicz](AUTHORS.md) (Center for Applied Bioinformatics, St Jude Children's Research Hospital). Per-skill and per-script credits: [AUTHORS.md](AUTHORS.md).
+**Maintained by:** Toolbox curator in [AUTHORS.md](AUTHORS.md) (St Jude Children's Research Hospital). **Per-skill authors** and script copyrights: [AUTHORS.md](AUTHORS.md) Skills table.
+
+**Attribution:** Three-layer policy (skill package vs bundled code vs scientific method): [docs/attribution.md](docs/attribution.md). Method citations live in each skill’s `references/citations.md`.
 
 **License:** [CC BY-NC-SA 4.0](LICENSE.txt) (Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International).
 
@@ -43,3 +45,11 @@ Builds **publication-style 2D scatter plots with KDE density** comparing two dif
 Builds **publication-ready grids of Volcano and/or MA plots** from multiple differential RNA-seq or differential binding tables, with shared axis limits, optional gene highlighting, and column-name harmonization guidance.
 
 **Example prompt:** *Plot GSE202762 EGF timepoints from "volcano-grid-plot/examples" directory in natural order as a volcano grid plot. Highlight EGR1 on volcano and MA figures.*
+
+---
+
+### [reproducible-peaks](reproducible-peaks/README.md)
+
+Generates **reproducible ChIP-seq / ATAC-seq peak sets** across replicates with **ChIP-R** from **narrowPeak**, **broadPeak**, or **SICER BED** (auto-converted), including audit logs and run metadata.
+
+**Example prompt:** *Generate reproducible CTCF peaks with ChIP-R using the two BED files in `reproducible-peaks/examples` and save outputs under `agentResults/`.*
