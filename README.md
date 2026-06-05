@@ -53,3 +53,11 @@ Builds **publication-ready grids of Volcano and/or MA plots** from multiple diff
 Generates **reproducible ChIP-seq / ATAC-seq peak sets** across replicates with **ChIP-R** from **narrowPeak**, **broadPeak**, or **SICER BED** (auto-converted), including audit logs and run metadata.
 
 **Example prompt:** *Generate reproducible CTCF peaks with ChIP-R using the two BED files in `reproducible-peaks/examples` and save outputs under `agentResults/`.*
+
+---
+
+### [custom-ES-plot-GSEApy](custom-ES-plot-GSEApy/README.md)
+
+Generates **GSEApy prerank enrichment score (ES) plots** and **statistics text files** from saved `pre_res` pickle files, with support for exact gene sets, regex patterns (e.g. `SOS_peaks.*`), list files, and `allGeneSets`.
+
+**Example prompt:** *From `GSEApy_prerank.pre_res.RNA.KO_48h_vs_DMSO_48h.pkl`, plot enrichment for all APOPTOSIS related gene sets and save PNG/PDF/TXT under `agentResults/`.*

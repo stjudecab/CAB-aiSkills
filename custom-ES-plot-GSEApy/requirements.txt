@@ -1,0 +1,6 @@
+# Pip fallback for plotGseapyPrerankEnrichment.py
+# Prefer conda: conda env create -f environment.yml
+gseapy>=1.0.0
+pandas>=2.0
+matplotlib>=3.8
+rich>=13.0

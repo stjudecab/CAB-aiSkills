@@ -1,0 +1,11 @@
+name: gsea-prerank-plot
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python>=3.10
+  - gseapy>=1.0.0
+  - pandas>=2.0
+  - matplotlib>=3.8
+  - rich>=13.0

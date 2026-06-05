@@ -1,0 +1,4 @@
+# SOS peak gene sets (example list file)
+SOS_peaks.*closest
+SOS_peaks.*enhancer
+SOS_peaks.*promoter
