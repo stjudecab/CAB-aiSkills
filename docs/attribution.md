@@ -63,6 +63,10 @@ Use **multiple sentences or bullets**, not one vague credit.
 
 > Pathway enrichment used the **Enrichr** web service (Chen et al., 2013; Kuleshov et al., 2016) through the bundled **Enrichr API client** (`enrichr_api.py`; authors per file header) and the **CAB-aiSkills** `pathway-enrichment-enrichr` skill (skill author(s) in [AUTHORS.md](../AUTHORS.md); repository URL).
 
+**Example (genomic regions annotation):**
+
+> Genomic regions were annotated with CAB/St Jude genomic region annotation scripts (`voom2anno.sh`, `annotateGenomicFeatures.py`, `OrganizeAnnotationResults.py`; script authors per file headers and [AUTHORS.md](../AUTHORS.md)) using the stated genome build and annotation resources. Analysis was run via the **CAB-aiSkills** `genomic-regions-annotation` skill (skill author(s) in [AUTHORS.md](../AUTHORS.md); repository URL).
+
 **Do not** cite skill author(s) as the inventor of ChIP-R, Enrichr, or other third-party methods.
 
 ## Agent reporting rules

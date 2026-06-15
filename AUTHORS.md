@@ -5,6 +5,7 @@
 | Role | Name | Contact |
 |------|------|---------|
 | **Curator / maintainer** | Wojciech Rosikiewicz | rosikiewicz [at] gmail {dot} com |
+| **Curator / maintainer** | Hasan Al Reza | hasan.al.reza.bd@gmail.com |
 | **Affiliation** | St Jude Children's Research Hospital | |
 
 **License:** [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](LICENSE.txt) (CC BY-NC-SA 4.0) for skill packaging, documentation, and scripts unless noted otherwise in-file.
@@ -24,6 +25,7 @@
 | [pathway-enrichment-enrichr](pathway-enrichment-enrichr/README.md) | — (upstream) | `enrichr_api.py` | Copyright Beisi Xu && St Jude (2016–); contributions Wojciech Rosikiewicz (2020–); **do not reassign** — see in-file header |
 | [reproducible-peaks](reproducible-peaks/README.md) | Wojciech Rosikiewicz | `reproducible_peaks.py`, `sicer_to_broadpeak.py`, `logging_support.py` | Copyright Wojciech Rosikiewicz && St Jude (see script headers) |
 | [custom-ES-plot-GSEApy](custom-ES-plot-GSEApy/README.md) | Wojciech Rosikiewicz | `plotGseapyPrerankEnrichment.py` | Copyright Wojciech Rosikiewicz && St Jude (see script header) |
+| [genomic-regions-annotation](genomic-regions-annotation/README.md) | Hasan Al Reza | `run_genomic_regions_annotation.py`, `voom2anno.sh`, `annotateGenomicFeatures.py`, `OrganizeAnnotationResults.py` | Copyright Hasan Al Reza && St Jude (2025-) ; contributions Beisi Xu (2016–) && Wojciech Rosikiewicz (2020–) (see script headers) |
 
 ---
 
@@ -56,6 +58,7 @@ When describing **how results were computed** in a paper, grant, or methods sect
 | [reproducible-peaks](reproducible-peaks/references/citations.md) | **ChIP-R** — Newell et al., bioRxiv 2020 ([doi:10.1101/2020.11.24.396960](https://doi.org/10.1101/2020.11.24.396960)) |
 | [pathway-enrichment-enrichr](pathway-enrichment-enrichr/references/citations.md) | **Enrichr** — Kuleshov et al., *NAR* 2016; Chen et al., *BMC Bioinformatics* 2013 |
 | [custom-ES-plot-GSEApy](custom-ES-plot-GSEApy/references/citations.md) | **GSEA** — Subramanian et al., *PNAS* 2005; **GSEApy** — Fang et al., *Bioinformatics* 2022 ([doi:10.1093/bioinformatics/btac757](https://doi.org/10.1093/bioinformatics/btac757)) |
+| [genomic-regions-annotation](genomic-regions-annotation/references/citations.md) | **CAB/St Jude genomic region annotation workflow** — credit bundled scripts per file headers and report the genome build / annotation resources used |
 
 Per-skill copy-paste examples: each skill’s `references/citations.md` and README **Citation** section.
 
