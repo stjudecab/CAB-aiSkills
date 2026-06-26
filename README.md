@@ -58,6 +58,16 @@ Generates **reproducible ChIP-seq / ATAC-seq peak sets** across replicates with 
 
 ### [custom-ES-plot-GSEApy](custom-ES-plot-GSEApy/README.md)
 
-Generates **GSEApy prerank enrichment score (ES) plots** and **statistics text files** from saved `pre_res` pickle files, with support for exact gene sets, regex patterns (e.g. `SOS_peaks.*`), list files, and `allGeneSets`.
+Generates **GSEA enrichment score (ES) plots** and **statistics text files** from saved GSEApy `pre_res` pickle files **or** Broad Institute GSEA desktop output directories, with support for exact gene sets, regex patterns (e.g. `SOS_peaks.*`), list files, and `allGeneSets` — including non-significant gene sets omitted from default top-set figure exports.
 
-**Example prompt:** *From `GSEApy_prerank.pre_res.RNA.KO_48h_vs_DMSO_48h.pkl`, plot enrichment for all APOPTOSIS related gene sets and save PNG/PDF/TXT under `agentResults/`.*
+**Example prompt (GSEApy pickle):** *From `GSEApy_prerank.pre_res.RNA.SynGR303_48h_vs_DMSO_48h.pkl`, plot enrichment for all `SOS_peaks.*` gene sets and save PNG/PDF/TXT under `agentResults/`.*
+
+**Example prompt (Broad GSEA):** *From my Broad GSEA folder `48h.GseaPreranked.<timestamp>/`, replot ES plots for `REACTOME_HEME_SIGNALING` and all `CHIP.EP300.*48H.*UP` gene sets; save PNG/PDF/TXT under `agentResults/`.*
+
+---
+
+### [genomic-regions-annotation](genomic-regions-annotation/README.md)
+
+Runs **genomic region annotation and interpretation** for ATAC-seq, ChIP-seq, CUT&Tag, CUT&RUN, and differential region results, including nearby-gene annotation, genomic feature assignment, reporting, visualization, and GSEA-ready exports. Requires an explicitly stated genome build.
+
+**Example prompt:** *Run genomic region annotation on header-free BED files in `peaks/` using genome build `hg38`, and write outputs under `agentResults/`.*

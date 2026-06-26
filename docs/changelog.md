@@ -2,6 +2,20 @@
 
 Newest entries first.
 
+## 2026-06-26
+
+- Extended **`custom-ES-plot-GSEApy`** with Broad Institute GSEA desktop output support (`broadGseaInput.py`): replot ES figures from `*.GseaPreranked.*/edb/` artifacts for exact, regex, list-file, or `allGeneSets` selections — including non-significant gene sets omitted from default `plot_top_x` exports.
+- Added combined multi-gene-set trace plotting for Broad GSEA replots with optional color maps.
+- Updated skill docs, smoke tests, citations, and repository index for dual GSEApy-pickle / Broad-GSEA input modes.
+
+## 2026-06-15
+
+- Added **`genomic-regions-annotation`** skill: genomic region annotation and interpretation for ATAC-seq, ChIP-seq, CUT&Tag, CUT&RUN, and differential region inputs.
+- Added workflow coverage for header-free BED, gzipped BED, and VOUT inputs with explicit genome-build selection.
+- Bundled the genomic annotation wrapper, helper scripts, annotation resources, example input, visual assets, and Conda environment specification.
+- Added skill references for citations, input formats/genomes, and workflow outputs.
+- Updated [AUTHORS.md](../AUTHORS.md), [README.md](../README.md), and [docs/attribution.md](attribution.md) for the new skill.
+
 ## 2026-06-05
 
 - Added **`custom-ES-plot-GSEApy`** skill: GSEApy prerank enrichment score (ES) plots and statistics from saved `pre_res` pickle files (`plotGseapyPrerankEnrichment.py`).

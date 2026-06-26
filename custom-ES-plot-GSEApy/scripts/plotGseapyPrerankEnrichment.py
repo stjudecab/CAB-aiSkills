@@ -8,10 +8,10 @@
 #*Author:       Wojciech Rosikiewicz < email [at] gmail DOT com >
 # File Name: plotGseapyPrerankEnrichment.py
 # Description:
-# Generate GSEApy prerank enrichment plots and statistics from pre_res pickles.
+# Generate GSEA enrichment plots from GSEApy pre_res pickles or Broad GSEA output.
 #########################################################################
 
-"""Generate GSEApy prerank enrichment plots from saved pre_res pickle files."""
+"""Generate GSEA enrichment plots from GSEApy pickles or Broad GSEA desktop output."""
 
 from __future__ import annotations
 
@@ -32,6 +32,19 @@ import gseapy
 import matplotlib.pyplot as plt
 import pandas as pd
 from rich.logging import RichHandler
+
+SCRIPTS_DIR = Path(__file__).resolve().parent
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+
+from broadGseaInput import (  # noqa: E402
+    availableBroadGeneSets,
+    groupBroadTermsByDirectionSuffix,
+    loadBroadGseaContext,
+    plotBroadCombinedTraceForTerms,
+    plotBroadEnrichmentForTerm,
+    writeCombinedTraceColorMap,
+)
 
 SCRIPTStem = Path(__file__).stem
 DEFAULTFigWidth = 6.0
@@ -324,8 +337,8 @@ def resolveGeneSetNames(
     return resolved, missingCount
 
 
-def defaultOutputDir(pklPath: Path, runId: str) -> Path:
-    """Build the default run-scoped output directory for enrichment plots.
+def defaultOutputDirForPkl(pklPath: Path, runId: str) -> Path:
+    """Build the default run-scoped output directory for GSEApy pickle inputs.
 
     Args:
         pklPath (Path): Input pickle path.
@@ -340,6 +353,19 @@ def defaultOutputDir(pklPath: Path, runId: str) -> Path:
     if pklStem.endswith(".pkl"):
         pklStem = pklStem[: -len(".pkl")]
     return pklPath.parent / "plots" / "enrichment" / pklStem / runId
+
+
+def defaultOutputDirForBroadGsea(gseaDir: Path, runId: str) -> Path:
+    """Build the default run-scoped output directory for Broad GSEA inputs.
+
+    Args:
+        gseaDir (Path): Broad GSEA desktop output directory.
+        runId (str): UTC run identifier.
+
+    Returns:
+        Path: ``plots/enrichment/<gsea_dir_name>/<run_id>/`` under the GSEA parent.
+    """
+    return gseaDir.parent / "plots" / "enrichment" / gseaDir.name / runId
 
 
 def res2dRowForTerm(preRes, term: str) -> pd.Series:
@@ -478,33 +504,60 @@ def listGeneSets(
 def writeRunMetadata(
     metadataPath: Path,
     runId: str,
-    pklPath: Path,
+    inputSource: str,
+    inputPath: Path,
     geneSetSpecs: str,
     plottedTerms: Iterable[str],
     missingSpecCount: int,
     listOnly: bool = False,
+        broadWeight: float | None = None,
+        combineTrace: bool = False,
+        combinedTraceStems: Iterable[str] | None = None,
+        combinedTraceColorMapPath: Path | None = None,
+        combinedTraceGeneSetColorsPath: Path | None = None,
 ) -> None:
     """Persist run metadata for reproducibility.
 
     Args:
         metadataPath (Path): Output JSON metadata path.
         runId (str): UTC run identifier.
-        pklPath (Path): Input pickle path.
+        inputSource (str): ``gseapyPkl`` or ``broadGsea``.
+        inputPath (Path): Input pickle or Broad GSEA directory path.
         geneSetSpecs (str): Raw ``--geneSetName`` argument.
         plottedTerms (Iterable[str]): Gene sets plotted or listed.
         missingSpecCount (int): Number of unresolved gene-set specifications.
         listOnly (bool): Whether the run was list-only (no plots generated).
+        broadWeight (float | None): Weighted score exponent used for Broad replots.
+        combineTrace (bool): Whether combined trace plots were written.
+        combinedTraceStems (Iterable[str] | None): Output stems for combined trace plots.
+        combinedTraceColorMapPath (Path | None): Path to factor color palette TSV.
+        combinedTraceGeneSetColorsPath (Path | None): Path to gene-set color TSV.
     """
     metadata = {
         "run_id": runId,
         "timestamp_utc": runId,
-        "input_pkl": str(pklPath.resolve()),
+        "input_source": inputSource,
         "gene_set_name_arg": geneSetSpecs,
         "list_only": listOnly,
         "gene_sets": list(plottedTerms),
         "missing_spec_count": missingSpecCount,
         "gseapy_version": gseapy.__version__,
     }
+    if inputSource == "gseapyPkl":
+        metadata["input_pkl"] = str(inputPath.resolve())
+    else:
+        metadata["input_gsea_dir"] = str(inputPath.resolve())
+        if broadWeight is not None:
+            metadata["broad_weight"] = broadWeight
+    if combineTrace:
+        metadata["combine_trace"] = True
+        metadata["combined_trace_stems"] = list(combinedTraceStems or [])
+        if combinedTraceColorMapPath is not None:
+            metadata["combined_trace_color_map"] = str(combinedTraceColorMapPath)
+        if combinedTraceGeneSetColorsPath is not None:
+            metadata["combined_trace_gene_set_colors"] = str(
+                combinedTraceGeneSetColorsPath
+            )
     if listOnly:
         metadata["listed_gene_sets"] = list(plottedTerms)
     else:
@@ -531,19 +584,32 @@ def parseArgs() -> argparse.Namespace:
 
     parser = argparse.ArgumentParser(
         description=(
-            "Generate GSEApy prerank enrichment plots and statistics from "
-            "saved pre_res pickle files."
+            "Generate GSEA enrichment score plots and statistics from a GSEApy "
+            "prerank pre_res pickle or a Broad Institute GSEA desktop output "
+            "directory."
         )
     )
 
     requiredParams = parser.add_argument_group("REQUIRED parameters")
-    requiredParams.add_argument(
+    inputParams = requiredParams.add_mutually_exclusive_group(required=True)
+    inputParams.add_argument(
         "--inPKL",
         help="Path to a GSEApy prerank pre_res pickle file (.pkl).",
         action="store",
         type=str,
-        required=True,
+        required=False,
         dest="inPKL",
+    )
+    inputParams.add_argument(
+        "--inGseaDir",
+        help=(
+            "Path to a Broad Institute GSEA desktop output directory containing "
+            "edb/results.edb, edb/*.rnk, and edb/gene_sets.gmt."
+        ),
+        action="store",
+        type=str,
+        required=False,
+        dest="inGseaDir",
     )
     requiredParams.add_argument(
         "--geneSetName",
@@ -575,13 +641,26 @@ def parseArgs() -> argparse.Namespace:
         "--outputDir",
         help=(
             "Output directory for plots and statistics. Default: "
-            "plots/enrichment/<pkl_stem>/<run_id>/ next to the input pickle."
+            "plots/enrichment/<input_stem>/<run_id>/ next to the input pickle "
+            "or Broad GSEA directory."
         ),
         action="store",
         type=str,
         required=False,
         default=None,
         dest="outputDir",
+    )
+    optionalParams.add_argument(
+        "--weight",
+        help=(
+            "Weighted score exponent for Broad GSEA replots (choose from "
+            "0, 1, 1.5, 2). Default: infer from the Broad .rpt file or 1.0."
+        ),
+        action="store",
+        type=float,
+        required=False,
+        default=None,
+        dest="weight",
     )
     optionalParams.add_argument(
         "--figWidth",
@@ -600,6 +679,29 @@ def parseArgs() -> argparse.Namespace:
         type=float,
         required=False,
         dest="figHeight",
+    )
+    optionalParams.add_argument(
+        "--combineTrace",
+        help=(
+            "Write combined multi-pathway trace plots using gseapy.gseaplot2. "
+            "Groups resolved gene sets by trailing suffix such as TOP500_UP or "
+            "TOP500_DOWN. Default=False."
+        ),
+        default=False,
+        action="store_true",
+        required=False,
+        dest="combineTrace",
+    )
+    optionalParams.add_argument(
+        "--combineTraceOnly",
+        help=(
+            "When used with --combineTrace, skip per-gene-set gseaplot figures and "
+            "write only combined trace plots. Default=False."
+        ),
+        default=False,
+        action="store_true",
+        required=False,
+        dest="combineTraceOnly",
     )
     optionalParams.add_argument(
         "--logLevel",
@@ -624,26 +726,32 @@ def parseArgs() -> argparse.Namespace:
     commandUsed = " ".join(shlex.quote(arg) for arg in [os.path.basename(executable)] + argv)
     lgr.info("Command used to run script: {}".format(commandUsed))
     lgr.info("Input pickle (--inPKL): {}".format(args.inPKL))
+    lgr.info("Input Broad GSEA directory (--inGseaDir): {}".format(args.inGseaDir))
     lgr.info("Gene set selection (--geneSetName): {}".format(args.geneSetName))
     lgr.info("List only (--listOnly): {}".format(args.listOnly))
     lgr.info("Output directory (--outputDir): {}".format(args.outputDir))
+    lgr.info("Broad weight (--weight): {}".format(args.weight))
     lgr.info("Figure width (--figWidth): {}".format(args.figWidth))
     lgr.info("Figure height (--figHeight): {}".format(args.figHeight))
+    lgr.info("Combine trace (--combineTrace): {}".format(args.combineTrace))
+    lgr.info("Combine trace only (--combineTraceOnly): {}".format(args.combineTraceOnly))
     lgr.info("Logging level (--logLevel): {}".format(args.logLevel))
 
     return args
 
 
-def main() -> None:
-    """Run enrichment plotting from a GSEApy prerank pickle file."""
-    configureLogging()
-    args = parseArgs()
-    configureLogging(logLevel=args.logLevel)
+def runGseapyPklWorkflow(args: argparse.Namespace, runId: str) -> None:
+    """Run enrichment plotting from a GSEApy prerank pickle file.
 
+    Args:
+        args (argparse.Namespace): Parsed CLI arguments.
+        runId (str): UTC run identifier.
+
+    Returns:
+        None.
+    """
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
-    runId = utcRunId()
     pklPath = Path(args.inPKL).expanduser().resolve()
-
     preRes = loadPreRes(pklPath)
     available = availableGeneSets(preRes)
     lgr.info("Found {} gene set(s) in the input pickle.".format(len(available)))
@@ -659,7 +767,7 @@ def main() -> None:
     if args.outputDir:
         outputDir = Path(args.outputDir).expanduser().resolve()
     else:
-        outputDir = defaultOutputDir(pklPath, runId) if not args.listOnly else None
+        outputDir = defaultOutputDirForPkl(pklPath, runId) if not args.listOnly else None
 
     if args.listOnly:
         listGeneSets(resolvedTerms, outputDir=outputDir)
@@ -668,7 +776,8 @@ def main() -> None:
             writeRunMetadata(
                 metadataPath=metadataPath,
                 runId=runId,
-                pklPath=pklPath,
+                inputSource="gseapyPkl",
+                inputPath=pklPath,
                 geneSetSpecs=args.geneSetName,
                 plottedTerms=resolvedTerms,
                 missingSpecCount=missingSpecCount,
@@ -697,7 +806,8 @@ def main() -> None:
     writeRunMetadata(
         metadataPath=metadataPath,
         runId=runId,
-        pklPath=pklPath,
+        inputSource="gseapyPkl",
+        inputPath=pklPath,
         geneSetSpecs=args.geneSetName,
         plottedTerms=plottedTerms,
         missingSpecCount=missingSpecCount,
@@ -706,6 +816,134 @@ def main() -> None:
     lgr.info("Saved run metadata: {}".format(metadataPath))
     lgr.info("Plotted {} gene set(s).".format(len(plottedTerms)))
     lgr.info("All done, thank you!")
+
+
+def runBroadGseaWorkflow(args: argparse.Namespace, runId: str) -> None:
+    """Run enrichment plotting from a Broad GSEA desktop output directory.
+
+    Args:
+        args (argparse.Namespace): Parsed CLI arguments.
+        runId (str): UTC run identifier.
+
+    Returns:
+        None.
+    """
+    lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
+    gseaDir = Path(args.inGseaDir).expanduser().resolve()
+    broadContext = loadBroadGseaContext(gseaDir, weight=args.weight)
+    available = availableBroadGeneSets(broadContext)
+    lgr.info("Found {} gene set(s) in Broad GSEA results.edb.".format(len(available)))
+
+    resolvedTerms, missingSpecCount = resolveGeneSetNames(args.geneSetName, available)
+    if not resolvedTerms:
+        lgr.error(
+            "No gene sets were resolved. Check --geneSetName and the log "
+            "for missing or invalid specifications."
+        )
+        raise SystemExit(1)
+
+    if args.outputDir:
+        outputDir = Path(args.outputDir).expanduser().resolve()
+    else:
+        outputDir = (
+            defaultOutputDirForBroadGsea(gseaDir, runId) if not args.listOnly else None
+        )
+
+    if args.listOnly:
+        listGeneSets(resolvedTerms, outputDir=outputDir)
+        if outputDir is not None:
+            metadataPath = outputDir / "run_metadata.json"
+            writeRunMetadata(
+                metadataPath=metadataPath,
+                runId=runId,
+                inputSource="broadGsea",
+                inputPath=gseaDir,
+                geneSetSpecs=args.geneSetName,
+                plottedTerms=resolvedTerms,
+                missingSpecCount=missingSpecCount,
+                listOnly=True,
+                broadWeight=broadContext.weight,
+            )
+            lgr.info("Saved run metadata: {}".format(metadataPath))
+        lgr.info("All done, thank you!")
+        return
+
+    outputDir.mkdir(parents=True, exist_ok=True)
+    lgr.info("Writing outputs to {}".format(outputDir))
+
+    plottedTerms: list[str] = []
+    combinedTraceStems: list[str] = []
+    if not args.combineTraceOnly:
+        for term in resolvedTerms:
+            plotBroadEnrichmentForTerm(
+                context=broadContext,
+                term=term,
+                outputDir=outputDir,
+                figWidth=args.figWidth,
+                figHeight=args.figHeight,
+            )
+            plottedTerms.append(term)
+
+    combinedTraceColorMapPath: Path | None = None
+    combinedTraceGeneSetColorsPath: Path | None = None
+    if args.combineTrace:
+        (
+            combinedTraceColorMapPath,
+            combinedTraceGeneSetColorsPath,
+        ) = writeCombinedTraceColorMap(outputDir, resolvedTerms)
+        for suffix, groupedTerms in groupBroadTermsByDirectionSuffix(resolvedTerms).items():
+            outputStem = "combined_trace_{}".format(suffix)
+            plotBroadCombinedTraceForTerms(
+                context=broadContext,
+                terms=groupedTerms,
+                outputStem=outputStem,
+                outputDir=outputDir,
+                figWidth=args.figWidth,
+                figHeight=args.figHeight,
+            )
+            combinedTraceStems.append(outputStem)
+            if args.combineTraceOnly:
+                plottedTerms.extend(groupedTerms)
+
+    if args.combineTraceOnly and not args.combineTrace:
+        lgr.error("--combineTraceOnly requires --combineTrace.")
+        raise SystemExit(1)
+
+    metadataPath = outputDir / "run_metadata.json"
+    writeRunMetadata(
+        metadataPath=metadataPath,
+        runId=runId,
+        inputSource="broadGsea",
+        inputPath=gseaDir,
+        geneSetSpecs=args.geneSetName,
+        plottedTerms=plottedTerms if plottedTerms else resolvedTerms,
+        missingSpecCount=missingSpecCount,
+        listOnly=False,
+        broadWeight=broadContext.weight,
+        combineTrace=args.combineTrace,
+        combinedTraceStems=combinedTraceStems,
+        combinedTraceColorMapPath=combinedTraceColorMapPath,
+        combinedTraceGeneSetColorsPath=combinedTraceGeneSetColorsPath,
+    )
+    lgr.info("Saved run metadata: {}".format(metadataPath))
+    if args.combineTrace:
+        lgr.info("Wrote {} combined trace plot(s).".format(len(combinedTraceStems)))
+    if not args.combineTraceOnly:
+        lgr.info("Plotted {} individual gene set(s).".format(len(resolvedTerms)))
+    lgr.info("All done, thank you!")
+
+
+def main() -> None:
+    """Run enrichment plotting from a GSEApy pickle or Broad GSEA output directory."""
+    configureLogging()
+    args = parseArgs()
+    configureLogging(logLevel=args.logLevel)
+
+    runId = utcRunId()
+    if args.inPKL:
+        runGseapyPklWorkflow(args, runId)
+        return
+    runBroadGseaWorkflow(args, runId)
 
 
 if __name__ == "__main__":

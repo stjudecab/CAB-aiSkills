@@ -1,0 +1,13 @@
+interface:
+  display_name: "Genomic regions annotation"
+  short_description: "Run St. Jude/CAB-style genomic region annotation for .bed and .vout inputs with an explicit genome build."
+  default_prompt: "Use $genomic-regions-annotation to run the annotation with an explicitly stated genome, ask for the genome if missing, and summarize the output."
+
+policy:
+  allow_implicit_invocation: true
+  safety: "Follow Microsoft content policies"
+  copyright: "Avoid generating copyrighted text verbatim"
+  code_changes:
+    - "Prefer small, focused edits"
+    - "Do not revert unrelated user changes"
+    - "Validate changes before finishing"

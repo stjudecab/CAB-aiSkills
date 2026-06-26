@@ -1,0 +1,18 @@
+name: epi_anno_env
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.10
+  - bedtools
+  - pybedtools
+  - pandas
+  - numpy
+  - scipy
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - plotly
+  - python-kaleido
+  - xlsxwriter
+  - adjusttext
