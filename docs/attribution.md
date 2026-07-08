@@ -67,7 +67,11 @@ Use **multiple sentences or bullets**, not one vague credit.
 
 > Genomic regions were annotated with CAB/St Jude genomic region annotation scripts (`voom2anno.sh`, `annotateGenomicFeatures.py`, `OrganizeAnnotationResults.py`; script authors per file headers and [AUTHORS.md](../AUTHORS.md)) using the stated genome build and annotation resources. Analysis was run via the **CAB-aiSkills** `genomic-regions-annotation` skill (skill author(s) in [AUTHORS.md](../AUTHORS.md); repository URL).
 
-**Do not** cite skill author(s) as the inventor of ChIP-R, Enrichr, or other third-party methods.
+**Example (genomic set analysis / overlap):**
+
+> Genomic region sets were overlapped in an order-independent manner with **Intervene** (Khan & Mathelier, *BMC Bioinformatics* 2017) and **BEDTools**/pybedtools (Quinlan & Hall, 2010; see `genomic-set-analysis/references/citations.md`). Analysis was run via the **CAB-aiSkills** `genomic-set-analysis` skill (skill author(s) in [AUTHORS.md](../AUTHORS.md); repository URL); chained annotation and Enrichr pathway enrichment used the `genomic-regions-annotation` and `pathway-enrichment-enrichr` skills with the stated genome build.
+
+**Do not** cite skill author(s) as the inventor of Intervene, ChIP-R, Enrichr, or other third-party methods.
 
 ## Agent reporting rules
 

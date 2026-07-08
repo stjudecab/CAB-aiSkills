@@ -1,0 +1,20 @@
+name: genomicSetAnalysis
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  # Intervene 0.6.4 imports `from collections import Iterable`, removed in Python 3.10+,
+  # so the interpreter must stay < 3.10. Do not bump without a newer Intervene release.
+  - python>=3.8,<3.10
+  - intervene>=0.6.4
+  - bedtools>=2.30
+  - pybedtools>=0.9.0
+  - pandas>=1.3
+  - numpy>=1.21
+  # Expression summaries (expression_summary.py)
+  - scipy>=1.7
+  - seaborn>=0.12
+  - matplotlib>=3.5
+  # Testing
+  - pytest>=7.0

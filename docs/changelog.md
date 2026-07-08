@@ -2,6 +2,21 @@
 
 Newest entries first.
 
+## 2026-07-08
+
+- Added **`genomic-set-analysis`** skill: portable, HPC-independent successor to the in-house `IntervenePeaksCombine.py` wrapper for order-independent overlap of genomic region sets or gene sets with **Intervene** (Venn / UpSet / pairwise), a membership matrix, and mutually exclusive per-sector files (`intervene_peaks_combine.py`).
+- Delegated annotation to the **`genomic-regions-annotation`** skill and Enrichr pathway enrichment (for **both** intersection sectors and original inputs) to the **`pathway-enrichment-enrichr`** skill; both require an explicitly stated genome build.
+- Added gated `expression_summary.py` (seaborn boxplots/heatmaps) requiring an expression matrix plus sample conditions/metadata.
+- Removed LSF/`bsub` scheduling; disabled motif enrichment (HOMER) and deeptools modules as planned-but-not-yet-available.
+- Added per-run reproducibility record (`run_metadata.json`, `logs/commands.log`) capturing the command, resolved inputs, parameters, and Intervene/BEDTools/pybedtools/pandas/numpy/Python versions.
+- Bundled references (methods, inputs/outputs, chaining, citations), example BEDs/GMT/manifest/expression data, evaluation prompts, pytest suite, and skill badge.
+- Added `environment.yml` pinning **Python 3.8–3.9** (Intervene 0.6.4 imports `collections.Iterable`, removed in 3.10+) and installing the Intervene/BEDTools binaries alongside the Python dependencies.
+- Made the pairwise heatmap step **best-effort**: an upstream Intervene/pandas `DataFrame.ix` incompatibility in the `tribar` heatmap is now logged as a warning and skipped instead of aborting the run; the frac matrix, sectors, Venn/UpSet, and `color`/`pie` heatmaps are still produced.
+- Verified end to end on the bundled examples in a dedicated conda env (genomic overlap of 3 BEDs, GMT gene-set overlap, and gated expression summary), plus the pytest suite.
+- Added **short set label** policy for agents: derive ≤15-character unique analysis labels when basenames/GMT names are long; pass via `-n` or manifest TSV; write `setLabelsManifest.tsv` mapping `original_label` → `analysis_label`; GMT mode now accepts `-n` for shortened labels.
+- Added default **pathway enrichment filter**: unless the user overrides, enrich only the **top 10 intersection sectors with ≥5 genes** and **original sets with ≥5 genes**; bundled `filter_gmt_for_pathway.py` writes filtered GMTs and filter-manifest TSVs before calling `pathway-enrichment-enrichr`.
+- Updated [AUTHORS.md](../AUTHORS.md), [README.md](../README.md), and [docs/attribution.md](attribution.md) for the new skill.
+
 ## 2026-06-26
 
 - Extended **`custom-ES-plot-GSEApy`** with Broad Institute GSEA desktop output support (`broadGseaInput.py`): replot ES figures from `*.GseaPreranked.*/edb/` artifacts for exact, regex, list-file, or `allGeneSets` selections — including non-significant gene sets omitted from default `plot_top_x` exports.

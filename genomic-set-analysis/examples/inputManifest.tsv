@@ -1,0 +1,5 @@
+# Two-column manifest: BED path <tab> label. Lines starting with '#' are ignored.
+# Paths may be absolute or relative to the working directory.
+examples/peaksFactorA.bed	FactorA
+examples/peaksFactorB.bed	FactorB
+examples/peaksFactorC.bed	FactorC

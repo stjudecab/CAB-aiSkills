@@ -1,0 +1,3 @@
+Up_conditionA	na	TP53	MYC	EGFR	CDKN1A	BAX
+Down_conditionA	na	MYC	EGFR	CCND1	VEGFA
+Up_conditionB	na	TP53	CDKN1A	FOXO3	GADD45A

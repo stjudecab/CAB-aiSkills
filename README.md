@@ -71,3 +71,11 @@ Generates **GSEA enrichment score (ES) plots** and **statistics text files** fro
 Runs **genomic region annotation and interpretation** for ATAC-seq, ChIP-seq, CUT&Tag, CUT&RUN, and differential region results, including nearby-gene annotation, genomic feature assignment, reporting, visualization, and GSEA-ready exports. Requires an explicitly stated genome build.
 
 **Example prompt:** *Run genomic region annotation on header-free BED files in `peaks/` using genome build `hg38`, and write outputs under `agentResults/`.*
+
+---
+
+### [genomic-set-analysis](genomic-set-analysis/README.md)
+
+**Order-independent overlap** of genomic region sets (ChIP-seq, ATAC-seq, CUT&Tag, CUT&RUN, narrowPeak/broadPeak/BED) or gene sets (GMT) with **Intervene** (Venn / UpSet / pairwise), producing a membership matrix and mutually exclusive per-sector files. Optionally chains the **`genomic-regions-annotation`** skill for nearby-gene annotation and the **`pathway-enrichment-enrichr`** skill for Enrichr pathway enrichment of **both** the intersection sectors and the original inputs, plus gated expression summaries. Requires an explicitly stated genome build for annotation/pathway steps; motif enrichment and deeptools are planned but not yet available.
+
+**Example prompt:** *Overlap the three BED files in `genomic-set-analysis/examples`, annotate against `hg38`, and run pathway enrichment for each intersection and for the original files; write outputs under `agentResults/`.*
