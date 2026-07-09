@@ -82,13 +82,45 @@ Given manifest `inputs.tsv` and prefix `out/run1`:
 |------|-------------|
 | `out/run1.volcanoGrid.png`, `.pdf` | Volcano grid (300 DPI PNG + vector PDF) |
 | `out/run1.MAgrid.png`, `.pdf` | MA grid |
-| `out/run1.volcanoGrid.gmt`, `.gmt.txt` | Up/down gene sets per panel (volcano) |
-| `out/run1.MAgrid.gmt`, `.gmt.txt` | Up/down sets per panel (MA) |
+| `out/run1.volcanoGrid.gmt` | Up/down gene sets per panel (volcano) |
+| `out/run1.MAgrid.gmt` | Up/down sets per panel (MA) |
 | `out/run1.volcanoGrid.<label>.labelPoints.tsv` | Region–gene mapping when `--identifyRegionByGeneName Yes` |
-| `volcano_ma_grid.log` | Execution log in working directory |
 
 Prefer run-scoped output:
 
 ```text
 agentResults/volcano-grid-plot-<YYYYMMDDTHHMMSSZ>/
+├── input_manifest.tsv
+├── <prefix>.volcanoGrid.png
+├── <prefix>.volcanoGrid.pdf
+├── run_metadata.json
+├── agent_request.txt              # verbatim user prompt (when provided)
+├── agent_workflow.md              # agent steps (when provided)
+├── column_renames.tsv             # optional harmonization record
+├── prepared/                      # optional harmonized tables
+└── logs/
+    ├── volcano_ma_grid.log
+    └── commands.log
 ```
+
+The script writes **`run_metadata.json`** and logs under the **parent directory of the output prefix** by default (or `--outputDir` when set). Pass `--runId`, `--agentRequest` / `--agentRequestFile`, and `--agentWorkflow` / `--agentWorkflowFile` for a complete reproducibility record.
+
+### Reproducibility record
+
+`run_metadata.json` captures:
+
+| Field | Description |
+|-------|-------------|
+| `run_id` | UTC `YYYYMMDDTHHMMSSZ` |
+| `timestamp_utc` | ISO-8601 execution time |
+| `command` | Exact CLI invocation |
+| `working_directory` | CWD when the script ran |
+| `input_manifest` | Path to the manifest TSV |
+| `inputs` | Resolved `inputFile` / `sampleLabel` pairs |
+| `parameters` | All plotting thresholds and column flags |
+| `tool_versions` | Python, pandas, numpy, matplotlib, seaborn |
+| `summary` | Grid layout and per-panel up/down counts |
+| `outputs` | Generated figure and GMT paths |
+| `agent_request_file` | Path to saved user prompt, if any |
+| `agent_workflow_file` | Path to saved agent workflow, if any |
+| `logs` | Paths to `volcano_ma_grid.log` and `commands.log` |

@@ -46,20 +46,24 @@ python volcano_grid.py inputs.tsv results/MA \
 """
 
 from __future__ import annotations
-import math, os, re, inspect
+import inspect
+import json
+import logging
 import math
 import os
-import inspect
+import re
+import shlex
+import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from sys import stdout
-from typing import Sequence, Tuple, Set
+from typing import Any, Dict, List, Sequence, Set, Tuple
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.patheffects as pe
-import logging
 
 # -----------------------------------------------------------------------------
 # logging helpers
@@ -104,22 +108,29 @@ def str2bool(v):
         lgr.critical("Unrecognized parameter was set for '{}'. Program was aborted.".format(v))
         exit()
 
-def configure_logging(log_prefix: str = os.path.basename(__file__).replace(".py", "")):
+def configure_logging(log_file: Path | str | None = None):
     """
     Configure root logger with colourful console output and a plain text log file.
 
-    A file called <log_prefix>.log will be created in the working directory.
+    When *log_file* is set, logs are written there (parent directories are created).
+    Otherwise a ``volcano_ma_grid.log`` file is created in the working directory.
     """
     logger = logging.getLogger()
+    logger.handlers.clear()
     logger.setLevel(logging.INFO)
 
     stream_hdlr = logging.StreamHandler(stdout)
-    file_hdlr = logging.FileHandler(f"{log_prefix}.log")
-
     stream_hdlr.setLevel(logging.INFO)
-    file_hdlr.setLevel(logging.INFO)
-
     stream_hdlr.setFormatter(CustomFormatter())
+
+    if log_file is None:
+        log_path = Path(f"{os.path.basename(__file__).replace('.py', '')}.log")
+    else:
+        log_path = Path(log_file)
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    file_hdlr = logging.FileHandler(log_path)
+    file_hdlr.setLevel(logging.INFO)
     file_hdlr.setFormatter(
         logging.Formatter(
             "###\t[%(asctime)s] %(filename)s:%(lineno)d: "
@@ -129,6 +140,160 @@ def configure_logging(log_prefix: str = os.path.basename(__file__).replace(".py"
 
     logger.addHandler(stream_hdlr)
     logger.addHandler(file_hdlr)
+
+
+def runIdUtc() -> str:
+    """Return a UTC run ID in ``YYYYMMDDTHHMMSSZ`` format."""
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
+def collectToolVersions() -> Dict[str, str]:
+    """Collect versions of Python and plotting libraries for the reproducibility record."""
+    import matplotlib
+
+    return {
+        "python": sys.version.split()[0],
+        "python_full": sys.version.replace("\n", " "),
+        "pandas": pd.__version__,
+        "numpy": np.__version__,
+        "matplotlib": matplotlib.__version__,
+        "seaborn": sns.__version__,
+        "script": Path(__file__).resolve().as_posix(),
+    }
+
+
+def readOptionalText(
+    inline_text: str | None,
+    file_path: str | None,
+    env_var: str | None = None,
+) -> str | None:
+    """Return trimmed text from an inline string, file, or environment variable."""
+    if inline_text:
+        return inline_text.strip()
+    if file_path:
+        return Path(file_path).expanduser().read_text(encoding="utf-8").strip()
+    if env_var and os.environ.get(env_var):
+        return os.environ[env_var].strip()
+    return None
+
+
+def writeOptionalText(output_dir: Path, filename: str, content: str | None) -> Path | None:
+    """Write *content* to *output_dir/filename* when present."""
+    if not content:
+        return None
+    out_path = output_dir / filename
+    out_path.write_text(content.rstrip() + "\n", encoding="utf-8")
+    return out_path
+
+
+def copyOptionalTextFile(source: str | None, output_dir: Path, dest_name: str) -> Path | None:
+    """Copy a text file into the output directory when it exists."""
+    if not source:
+        return None
+    src = Path(source).expanduser()
+    if not src.is_file():
+        return None
+    dest = output_dir / dest_name
+    dest.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    return dest
+
+
+def appendCommandLog(commands_log: Path, run_id: str, command: str) -> None:
+    """Append one executed command to ``commands.log``."""
+    commands_log.parent.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now(timezone.utc).isoformat()
+    with open(commands_log, "a", encoding="utf-8") as fh:
+        fh.write(f"[{timestamp}] run_id={run_id}\n{command}\n\n")
+
+
+def collectExistingOutputs(out_prefix: Path, plots_requested: Sequence[str]) -> List[str]:
+    """Return output artifact paths that were written for this run."""
+    candidates: List[str] = []
+    if "volcano" in plots_requested:
+        candidates.extend(
+            out_prefix.as_posix() + suffix
+            for suffix in (
+                ".volcanoGrid.png",
+                ".volcanoGrid.pdf",
+                ".volcanoGrid.gmt",
+            )
+        )
+    if "ma" in plots_requested:
+        candidates.extend(
+            out_prefix.as_posix() + suffix
+            for suffix in (
+                ".MAgrid.png",
+                ".MAgrid.pdf",
+                ".MAgrid.gmt",
+            )
+        )
+    return [path for path in candidates if Path(path).is_file()]
+
+
+def writeRunMetadata(
+    metadata_path: Path,
+    *,
+    run_id: str,
+    args: Any,
+    output_dir: Path,
+    out_prefix: Path,
+    manifest_path: Path,
+    inputs: List[Dict[str, str]],
+    plots_requested: Sequence[str],
+    tool_versions: Dict[str, str],
+    summary: Dict[str, Any],
+    agent_request_path: Path | None,
+    agent_workflow_path: Path | None,
+    logs: Dict[str, str],
+) -> None:
+    """Write ``run_metadata.json`` capturing inputs, parameters, and tool versions."""
+    metadata = {
+        "skill": "volcano-grid-plot",
+        "script": Path(__file__).name,
+        "run_id": run_id,
+        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "command": "python " + " ".join(shlex.quote(str(part)) for part in sys.argv),
+        "working_directory": os.getcwd(),
+        "input_manifest": manifest_path.resolve().as_posix(),
+        "inputs": inputs,
+        "output_directory": output_dir.resolve().as_posix(),
+        "output_prefix": out_prefix.as_posix(),
+        "parameters": {
+            "plotsToPlot": args.plotsToPlot,
+            "fcCol": args.fcCol,
+            "sigCol": args.sigCol,
+            "aveExprCol": args.aveExprCol,
+            "nameCol": args.nameCol,
+            "fcCut": args.fcCut,
+            "fdrCut": args.fdrCut,
+            "cols": args.cols,
+            "rows": args.rows,
+            "labelPoints": args.labelPoints,
+            "plotGeneNames": args.plotGeneNames,
+            "plotDiffGeneMark": args.plotDiffGeneMark,
+            "identifyRegionByGeneName": args.identifyRegionByGeneName,
+            "customAbsMaxFC": args.customAbsMaxFC,
+            "customMaxP": args.customMaxP,
+            "customAbsMinAveExpr": args.customAbsMinAveExpr,
+            "customAbsMaxAveExpr": args.customAbsMaxAveExpr,
+        },
+        "tool_versions": tool_versions,
+        "summary": summary,
+        "outputs": collectExistingOutputs(out_prefix, plots_requested),
+        "agent_request_file": agent_request_path.resolve().as_posix() if agent_request_path else None,
+        "agent_workflow_file": agent_workflow_path.resolve().as_posix() if agent_workflow_path else None,
+        "logs": logs,
+        "attribution": {
+            "method": "Volcano and MA plot grids from differential-analysis tables.",
+            "skill_package": "CAB-aiSkills volcano-grid-plot (orchestration only).",
+            "note": (
+                "Column inspection, harmonization, and manifest preparation are performed "
+                "by the agent per SKILL.md; pass --agentRequest/--agentWorkflow to record them."
+            ),
+        },
+    }
+    metadata_path.parent.mkdir(parents=True, exist_ok=True)
+    metadata_path.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
 
 
 # -----------------------------------------------------------------------------
@@ -254,7 +419,7 @@ def _add_labels(
     for each row supplied.
     """
     sns.scatterplot(
-        rows,
+        data=rows,
         x=x,
         y=y,
         s=17,
@@ -319,7 +484,7 @@ def _plot_single_volcano(
         df_plot, up_plot, dn_plot = df, up, dn
 
     sns.scatterplot(
-        df_plot,
+        data=df_plot,
         x=fc_col,
         y=f"-log10({sig_col})",
         s=3,
@@ -328,7 +493,7 @@ def _plot_single_volcano(
         edgecolor="none",
     )
     sns.scatterplot(
-        up_plot,
+        data=up_plot,
         x=fc_col,
         y=f"-log10({sig_col})",
         s=3,
@@ -337,7 +502,7 @@ def _plot_single_volcano(
         edgecolor="none",
     )
     sns.scatterplot(
-        dn_plot,
+        data=dn_plot,
         x=fc_col,
         y=f"-log10({sig_col})",
         s=3,
@@ -494,7 +659,7 @@ def _plot_single_ma(
         df_plot, up_plot, dn_plot = df, up, dn
 
     sns.scatterplot(
-        df_plot,
+        data=df_plot,
         x=ave_col,
         y=fc_col,
         s=3,
@@ -503,7 +668,7 @@ def _plot_single_ma(
         edgecolor="none",
     )
     sns.scatterplot(
-        up_plot,
+        data=up_plot,
         x=ave_col,
         y=fc_col,
         s=3,
@@ -512,7 +677,7 @@ def _plot_single_ma(
         edgecolor="none",
     )
     sns.scatterplot(
-        dn_plot,
+        data=dn_plot,
         x=ave_col,
         y=fc_col,
         s=3,
@@ -724,6 +889,7 @@ def generate_grids(
     fig_xy = (figXsize, figYsize)
 
     volc_gmt_lines, ma_gmt_lines = [], []
+    panel_summaries: List[Dict[str, Any]] = []
     def _clean(label: str) -> str:
         """Convert any label to a GMT-safe identifier."""
         return re.sub(r'[^A-Za-z0-9]', '_', label)
@@ -800,6 +966,16 @@ def generate_grids(
             else:
                 lgr.info(f"[{lbl}] no down-regulated genes - skipped.")
 
+            panel_summaries.append(
+                {
+                    "sample_label": lbl,
+                    "input_file": fp.resolve().as_posix(),
+                    "plot_type": "volcano",
+                    "n_up": len(up_set),
+                    "n_down": len(dn_set),
+                }
+            )
+
             axs[r][c].set_title(lbl, fontsize=8)
         plt.tight_layout()
         fig.savefig(f"{outPrefix}.volcanoGrid.png", dpi=300, bbox_inches="tight")
@@ -811,12 +987,7 @@ def generate_grids(
             gmt_path = f"{outPrefix}.volcanoGrid.gmt"
             with open(gmt_path, "w") as fh:
                 fh.write("\n".join(volc_gmt_lines) + "\n")
-
-            # save the GMT also as text file (this is to avoid stupid Apple bug with reading in the files such as GMT, created "online" and being unsafe)
-            gmt_txt_path = f"{outPrefix}.volcanoGrid.gmt.txt"
-            with open(gmt_txt_path, "w") as fh:
-                fh.write("\n".join(volc_gmt_lines) + "\n")
-            lgr.info("Volcano GMT[.txt] written -> %s", gmt_path)
+            lgr.info("Volcano GMT written -> %s", gmt_path)
 
     # MA grid
     if "ma" in plotsToPlot:
@@ -890,6 +1061,16 @@ def generate_grids(
                 )
             else:
                 lgr.info(f"[{lbl}] no down-regulated genes - skipped.")
+
+            panel_summaries.append(
+                {
+                    "sample_label": lbl,
+                    "input_file": fp.resolve().as_posix(),
+                    "plot_type": "ma",
+                    "n_up": len(up_set),
+                    "n_down": len(dn_set),
+                }
+            )
             
             axs[r][c].set_title(lbl, fontsize=11)
         plt.tight_layout()
@@ -902,17 +1083,18 @@ def generate_grids(
             gmt_path = f"{outPrefix}.MAgrid.gmt"
             with open(gmt_path, "w") as fh:
                 fh.write("\n".join(ma_gmt_lines) + "\n")
-            
-            # save the GMT also as text file (this is to avoid stupid Apple bug with reading in the files such as GMT, created "online" and being unsafe)
-            gmt_txt_path = f"{outPrefix}.MAgrid.gmt.txt"
-            with open(gmt_txt_path, "w") as fh:
-                fh.write("\n".join(ma_gmt_lines) + "\n")
-            
-            lgr.info("MA GMT[.txt] written -> %s", gmt_path)
+            lgr.info("MA GMT written -> %s", gmt_path)
     else:
         lgr.info("MA grid was not requested, skipping.")
 
     lgr.info("Finished.")
+    plots_generated = [plot for plot in ("volcano", "ma") if plot in plotsToPlot]
+    return {
+        "n_panels": n_pan,
+        "grid_layout": {"cols": numFigCol, "rows": numFigRow},
+        "plots_generated": plots_generated,
+        "panels": panel_summaries,
+    }
 
 
 # -----------------------------------------------------------------------------
@@ -942,12 +1124,6 @@ def main():
                 "breaks fold-change filtering."
             )
         return x
-
-    configure_logging()
-
-    lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
-    lgr.info("Command: python %s", " ".join(str(a) for a in os.sys.argv))
-    lgr.info("Working directory: %s", os.getcwd())
 
     ap = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -1098,6 +1274,46 @@ def main():
         default="No",
     )
 
+    repro = ap.add_argument_group("reproducibility")
+    repro.add_argument(
+        "--outputDir",
+        help=(
+            "Directory for logs, run_metadata.json, and agent request/workflow files. "
+            "Default: parent directory of the output prefix."
+        ),
+    )
+    repro.add_argument(
+        "--runId",
+        help=(
+            "UTC run ID for metadata (YYYYMMDDTHHMMSSZ). Default: generated at execution time."
+        ),
+    )
+    repro.add_argument(
+        "--agentRequest",
+        help=(
+            "Verbatim user request that led to this run. Also accepted via "
+            "--agentRequestFile or the VOLCANO_GRID_AGENT_REQUEST environment variable."
+        ),
+    )
+    repro.add_argument(
+        "--agentRequestFile",
+        help="Path to a text file containing the user request (written as agent_request.txt).",
+    )
+    repro.add_argument(
+        "--agentWorkflow",
+        help=(
+            "Free-form markdown describing agent steps (column mapping, harmonization, "
+            "manifest preparation). Written as agent_workflow.md when provided."
+        ),
+    )
+    repro.add_argument(
+        "--agentWorkflowFile",
+        help=(
+            "Path to an existing agent_workflow.md to copy into the output directory. "
+            "Use when the agent prepared the workflow file before invoking the script."
+        ),
+    )
+
     # custom axis limits (default "auto" = data-driven); values are as displayed on the axes
     ap.add_argument(
         "--customAbsMaxFC",
@@ -1142,6 +1358,65 @@ def main():
         s.lower().strip() for s in args.plotsToPlot.split(",") if s.strip()
     ]
 
+    out_prefix = Path(args.prefix).expanduser().resolve()
+    output_dir = (
+        Path(args.outputDir).expanduser().resolve()
+        if args.outputDir
+        else out_prefix.parent
+    )
+    output_dir.mkdir(parents=True, exist_ok=True)
+    run_id = args.runId or runIdUtc()
+
+    logs_dir = output_dir / "logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    log_path = logs_dir / "volcano_ma_grid.log"
+    commands_log = logs_dir / "commands.log"
+    configure_logging(log_path)
+
+    lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
+    command_line = "python " + " ".join(shlex.quote(str(part)) for part in sys.argv)
+    tool_versions = collectToolVersions()
+
+    lgr.info("Run ID: %s", run_id)
+    lgr.info("Command: %s", command_line)
+    lgr.info("Working directory: %s", os.getcwd())
+    lgr.info("Output directory: %s", output_dir)
+    lgr.info("Tool versions: %s", json.dumps(tool_versions))
+    appendCommandLog(commands_log, run_id, command_line)
+
+    manifest_path = Path(args.tsv).expanduser().resolve()
+    manifest_df = pd.read_csv(manifest_path, sep="\t")
+    inputs = [
+        {
+            "input_file": str(row["inputFile"]),
+            "sample_label": str(row["sampleLabel"]),
+        }
+        for _, row in manifest_df.iterrows()
+    ]
+
+    agent_request = readOptionalText(
+        args.agentRequest,
+        args.agentRequestFile,
+        env_var="VOLCANO_GRID_AGENT_REQUEST",
+    )
+    agent_request_path = writeOptionalText(output_dir, "agent_request.txt", agent_request)
+    if agent_request_path:
+        lgr.info("Wrote user request: %s", agent_request_path)
+
+    agent_workflow_path = copyOptionalTextFile(
+        args.agentWorkflowFile,
+        output_dir,
+        "agent_workflow.md",
+    )
+    if agent_workflow_path is None:
+        agent_workflow_path = writeOptionalText(
+            output_dir,
+            "agent_workflow.md",
+            args.agentWorkflow,
+        )
+    if agent_workflow_path:
+        lgr.info("Wrote agent workflow: %s", agent_workflow_path)
+
     label_list = (
         [s.strip() for s in args.labelPoints.split(",")]
         if args.labelPoints
@@ -1182,7 +1457,7 @@ def main():
             lgr.critical("--customMaxP must be 'auto' or a number (e.g. 10).")
             raise
 
-    generate_grids(
+    summary = generate_grids(
         args.tsv,
         args.prefix,
         plotsToPlot=plots_requested,
@@ -1203,6 +1478,27 @@ def main():
         customAbsMinAveExpr=args.customAbsMinAveExpr,
         customAbsMaxAveExpr=args.customAbsMaxAveExpr,
     )
+
+    metadata_path = output_dir / "run_metadata.json"
+    writeRunMetadata(
+        metadata_path,
+        run_id=run_id,
+        args=args,
+        output_dir=output_dir,
+        out_prefix=out_prefix,
+        manifest_path=manifest_path,
+        inputs=inputs,
+        plots_requested=plots_requested,
+        tool_versions=tool_versions,
+        summary=summary,
+        agent_request_path=agent_request_path,
+        agent_workflow_path=agent_workflow_path,
+        logs={
+            "volcano_ma_grid.log": log_path.resolve().as_posix(),
+            "commands.log": commands_log.resolve().as_posix(),
+        },
+    )
+    lgr.info("Wrote reproducibility record: %s", metadata_path)
 
 
 if __name__ == "__main__":

@@ -100,18 +100,37 @@ python scripts/volcano_ma_grid.py \
   --plotsToPlot volcano,ma \
   --fcCol log2FC --sigCol FDR --nameCol geneSymbol --aveExprCol AveExpr \
   --cols 2 --rows 1 \
-  --labelPoints EGR1
+  --labelPoints EGR1 \
+  --runId <YYYYMMDDTHHMMSSZ> \
+  --agentRequestFile agent_request.txt \
+  --agentWorkflowFile agent_workflow.md
 ```
 
 Run from the **skill root** (`volcano-grid-plot/`). Use absolute paths in the manifest when the working directory may vary.
 
 ### Step 5 — Execute and verify
 
-1. Run from skill root; write outputs under `agentResults/volcano-grid-plot-<YYYYMMDDTHHMMSSZ>/`.
-2. Confirm exit code **0**.
-3. Check for expected `.volcanoGrid.pdf` / `.png` and, if requested, `.MAgrid.pdf` / `.png`.
-4. Scan `volcano_ma_grid.log` for WARNING/ERROR.
-5. Report output paths, thresholds used, column mapping, and any renames.
+1. Create `agentResults/volcano-grid-plot-<YYYYMMDDTHHMMSSZ>/`.
+2. Write **`agent_request.txt`** with the verbatim user prompt and **`agent_workflow.md`** documenting column mapping, harmonization (if any), manifest path, and the exact CLI you will run.
+3. Run the script; pass `--runId`, `--agentRequestFile`, and `--agentWorkflowFile` (or inline `--agentRequest` / `--agentWorkflow`).
+4. Confirm exit code **0**.
+5. Check for expected `.volcanoGrid.pdf` / `.png` and, if requested, `.MAgrid.pdf` / `.png`.
+6. Confirm **`run_metadata.json`**, **`logs/volcano_ma_grid.log`**, and **`logs/commands.log`** exist in the run directory.
+7. Scan the log for WARNING/ERROR.
+8. Report output paths, thresholds used, column mapping, harmonization, and point to `run_metadata.json` for reproducibility.
+
+## Reproducibility and documentation (CRITICAL)
+
+Every skill run must leave a complete audit trail under the run directory:
+
+1. **`run_metadata.json`** — written by the script: UTC run ID, exact command, resolved inputs, parameters, tool versions (Python, pandas, numpy, matplotlib, seaborn), per-panel up/down counts, and output paths.
+2. **`logs/volcano_ma_grid.log`** — full script execution log (no longer written to the working directory).
+3. **`logs/commands.log`** — append-only record of the plotting command.
+4. **`agent_request.txt`** — verbatim user prompt (via `--agentRequest`, `--agentRequestFile`, or `VOLCANO_GRID_AGENT_REQUEST`).
+5. **`agent_workflow.md`** — agent-produced steps: header inspection, column roles, harmonization/`column_renames.tsv`, manifest creation, CLI invocation.
+6. **`column_renames.tsv`** / **`prepared/*.tsv`** — when columns were harmonized (agent-produced).
+
+In your summary to the user, list the run directory, key figures, thresholds, column mapping, and **method + versions** from `run_metadata.json`.
 
 ## Scripts
 
@@ -130,6 +149,16 @@ Additionally, when columns were renamed:
 | `column_renames.tsv` | Per-file original → canonical column mapping (agent-produced) |
 | `prepared/*.tsv` | Optional harmonized copies used for plotting |
 
+Every run also produces a reproducibility bundle (see [references/input-manifest-and-layout.md](references/input-manifest-and-layout.md)):
+
+| File | Description |
+|------|-------------|
+| `run_metadata.json` | UTC run ID, command, inputs, parameters, tool versions, outputs |
+| `logs/volcano_ma_grid.log` | Full script log |
+| `logs/commands.log` | Executed command record |
+| `agent_request.txt` | Verbatim user prompt (when provided) |
+| `agent_workflow.md` | Agent workflow notes (when provided) |
+
 ## Quality Checks
 
 Before finishing, verify:
@@ -139,7 +168,8 @@ Before finishing, verify:
 - Cross-file column semantics are consistent (or harmonized with documented renames).
 - Requested plot files exist at 300 DPI (PNG) and PDF.
 - Highlighted genes (`--labelPoints`) were found (check log for match counts).
-- No CRITICAL errors in `volcano_ma_grid.log`.
+- `run_metadata.json` and `logs/volcano_ma_grid.log` exist in the run directory.
+- No CRITICAL errors in `logs/volcano_ma_grid.log`.
 
 ## Failure and Escalation
 

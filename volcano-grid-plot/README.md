@@ -70,8 +70,9 @@ Run from **this directory** (`volcano-grid-plot`). See [Example outputs](#exampl
 1. Read [SKILL.md](SKILL.md) and inspect **headers** of all input tables.
 2. Map columns per [references/column-identification.md](references/column-identification.md).
 3. Harmonize column names across files if needed; write `column_renames.tsv`.
-4. Build manifest TSV and run [scripts/volcano_ma_grid.py](scripts/volcano_ma_grid.py).
-5. Deliver PNG/PDF under `agentResults/volcano-grid-plot-<runId>/`.
+4. Write `agent_request.txt` and `agent_workflow.md` in the run directory.
+5. Build manifest TSV and run [scripts/volcano_ma_grid.py](scripts/volcano_ma_grid.py) with reproducibility flags.
+6. Deliver PNG/PDF and `run_metadata.json` under `agentResults/volcano-grid-plot-<runId>/`.
 
 ## Layout
 
@@ -91,8 +92,16 @@ Run from **this directory** (`volcano-grid-plot`). See [Example outputs](#exampl
 |--------------|-------------|
 | `<prefix>.volcanoGrid.png`, `.pdf` | Volcano grid (300 DPI + vector) |
 | `<prefix>.MAgrid.png`, `.pdf` | MA grid |
-| `<prefix>.*.gmt`, `*.gmt.txt` | Per-panel up/down gene sets |
-| `volcano_ma_grid.log` | Run log |
+| `<prefix>.*.gmt` | Per-panel up/down gene sets |
+| `run_metadata.json` | UTC run ID, command, inputs, parameters, tool versions |
+| `logs/volcano_ma_grid.log` | Full script execution log |
+| `logs/commands.log` | Executed command record |
+| `agent_request.txt` | Verbatim user prompt (when provided) |
+| `agent_workflow.md` | Agent workflow notes (when provided) |
+
+## Reproducibility
+
+Every run writes `run_metadata.json` with the exact command, resolved inputs, plotting parameters, and versions of Python, pandas, numpy, matplotlib, and seaborn. Logs live under `logs/` next to the figures. Pass `--agentRequestFile` and `--agentWorkflowFile` (or write those files before running) to capture the user prompt and agent preparation steps.
 
 ## User-facing prompt examples
 
