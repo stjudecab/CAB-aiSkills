@@ -45,33 +45,16 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 import seaborn as sns  # noqa: E402
 
+from run_logging import (
+    addReproducibilityArguments,
+    appendCommandLog,
+    commandLineString,
+    configureLogging,
+    runIdUtc,
+    writeAgentArtifacts,
+)
+
 LOGGER = logging.getLogger("expression_summary")
-
-
-def configureLogging(logFile: Optional[Path] = None) -> None:
-    """Configure root logging to stderr and, optionally, a file.
-
-    Args:
-        logFile (Optional[Path]): File path for a persistent log, or ``None``.
-
-    Returns:
-        None.
-    """
-    root = logging.getLogger()
-    for handler in root.handlers[:]:
-        root.removeHandler(handler)
-        handler.close()
-    handlers: List[logging.Handler] = [logging.StreamHandler(sys.stderr)]
-    if logFile is not None:
-        logFile.parent.mkdir(parents=True, exist_ok=True)
-        handlers.append(logging.FileHandler(logFile))
-    formatter = logging.Formatter(
-        "### [%(asctime)s] %(levelname)s %(name)s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
-    )
-    for handler in handlers:
-        handler.setFormatter(formatter)
-        root.addHandler(handler)
-    root.setLevel(logging.INFO)
 
 
 def parseArguments() -> argparse.Namespace:
@@ -117,6 +100,7 @@ def parseArguments() -> argparse.Namespace:
                         help="Figure size 'width,height' integers. Default '10,6'.")
     parser.add_argument("--overwrite", dest="overwrite", action="store_true",
                         help="Reuse an existing output directory.")
+    addReproducibilityArguments(parser)
     args = parser.parse_args()
 
     if args.exprSampleCondition == "ignore" and args.metadataFile == "ignore":
@@ -368,15 +352,37 @@ def main() -> None:
     Raises:
         FileExistsError: When the output directory exists and ``--overwrite`` was not given.
     """
-    configureLogging()
     args = parseArguments()
+    runId = args.runId or runIdUtc()
     from scipy.stats import zscore
 
     outDir = Path(args.outputDir)
     if outDir.exists() and not args.overwrite and any(outDir.iterdir()):
         raise FileExistsError(f"Output directory not empty: {outDir}. Use --overwrite to reuse it.")
     outDir.mkdir(parents=True, exist_ok=True)
-    configureLogging(outDir / "expression_summary.log")
+    logsDir = outDir / "logs"
+    logsDir.mkdir(parents=True, exist_ok=True)
+    scriptLog = logsDir / "expression_summary.log"
+    commandsLog = logsDir / "commands.log"
+    configureLogging(scriptLog)
+
+    command = commandLineString()
+    appendCommandLog(commandsLog, runId, command)
+    LOGGER.info("Run ID: %s", runId)
+    LOGGER.info("Command: %s", command)
+    LOGGER.info("Working directory: %s", os.getcwd())
+    LOGGER.info("Output directory: %s", outDir.resolve())
+
+    agentRequestPath, agentWorkflowPath = writeAgentArtifacts(
+        outDir,
+        args,
+        requestEnvVar="GENOMIC_SET_ANALYSIS_EXPRESSION_AGENT_REQUEST",
+        workflowEnvVar="GENOMIC_SET_ANALYSIS_EXPRESSION_AGENT_WORKFLOW",
+    )
+    if agentRequestPath:
+        LOGGER.info("Wrote user request: %s", agentRequestPath)
+    if agentWorkflowPath:
+        LOGGER.info("Wrote agent workflow: %s", agentWorkflowPath)
 
     geneSets = readGmt(Path(args.geneSetsGmt))
     LOGGER.info("Loaded %d gene sets from %s", len(geneSets), args.geneSetsGmt)
@@ -432,11 +438,13 @@ def main() -> None:
     metadata = {
         "skill": "genomic-set-analysis",
         "script": "expression_summary.py",
-        "run_id": datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
+        "run_id": runId,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        "command": "python " + " ".join(sys.argv),
+        "command": command,
+        "working_directory": os.getcwd(),
         "geneSetsGmt": args.geneSetsGmt,
         "exprMatrixFile": args.exprMatrixFile,
+        "output_directory": outDir.resolve().as_posix(),
         "parameters": {
             "exprGeneNameCol": args.exprGeneNameCol,
             "exprColumnsToDrop": args.exprColumnsToDrop,
@@ -453,6 +461,12 @@ def main() -> None:
             "seaborn": sns.__version__,
             "matplotlib": matplotlib.__version__,
         },
+        "agent_request_file": agentRequestPath.resolve().as_posix() if agentRequestPath else None,
+        "agent_workflow_file": agentWorkflowPath.resolve().as_posix() if agentWorkflowPath else None,
+        "logs": {
+            "expression_summary.log": scriptLog.resolve().as_posix(),
+            "commands.log": commandsLog.resolve().as_posix(),
+        },
     }
     with open(outDir / "run_metadata.json", "w", encoding="utf-8") as handle:
         json.dump(metadata, handle, indent=2)
@@ -460,4 +474,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    from skill_env import bootstrap
+
+    bootstrap()
     main()

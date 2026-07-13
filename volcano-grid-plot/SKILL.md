@@ -51,7 +51,7 @@ Use this skill when the user asks to:
 - **Plot types**: `--plotsToPlot volcano`, `ma`, or `volcano,ma` (default both).
 - **Column overrides**: `--fcCol`, `--sigCol`, `--nameCol`, `--aveExprCol` (after header inspection).
 - **Thresholds**: `--fcCut` (default `2`), `--fdrCut` (default `0.05`).
-- **Labels**: `--labelPoints`, `--plotGeneNames`, `--plotDiffGeneMark`, `--identifyRegionByGeneName`.
+- **Labels**: `--labelPoints`, `--plotGeneNames`, `--plotDiffGeneMark` (auto-on with `--labelPoints`; marks ↑ up, ↓ down, NS not significant), `--identifyRegionByGeneName`.
 - **Axis limits**: `--customAbsMaxFC`, `--customMaxP`, `--customAbsMinAveExpr`, `--customAbsMaxAveExpr` (`auto` or numeric).
 - Full list: `python scripts/volcano_ma_grid.py --help`.
 

@@ -38,10 +38,12 @@ All artifacts live under `<outputDir>/<outputPrefix>.intervene/`:
 ├── setLabelsManifest.tsv                     # original_label → analysis_label mapping
 ├── intersections.gmt                         # per-sector gene sets (GMT mode)
 ├── originalSets.gmt                          # original gene sets (GMT mode)
-├── logs/
-│   ├── intervene_peaks_combine.log
-│   └── commands.log                          # every Intervene command executed
-└── run_metadata.json                         # reproducibility record
+├── agent_request.txt                         # verbatim user prompt (when provided)
+├── agent_workflow.md                         # agent workflow notes (when provided)
+├── run_metadata.json                         # reproducibility record
+└── logs/
+    ├── intervene_peaks_combine.log           # full script execution log
+    └── commands.log                          # Python CLI + every Intervene command
 ```
 
 Add-on results are placed **inside** this directory when the agent chains the sibling skills:
@@ -96,6 +98,11 @@ characters and unique, or the user supplied short names.
 `run_metadata.json` captures: `run_id` (UTC `YYYYMMDDTHHMMSSZ`), `timestamp_utc`, exact `command`,
 `working_directory`, `mode`, resolved `inputs`, `labels` (analysis labels), `original_labels`,
 `set_labels_manifest`, `parameters`, `tool_versions`
-(Python, Intervene, BEDTools, pybedtools, pandas, numpy), a mode-specific `summary`, and an
-`attribution` block with `citation_keys`. Report the genome build separately when annotation/pathway
-steps run (it is recorded by those skills' own metadata).
+(Python, Intervene, BEDTools, pybedtools, pandas, numpy), `outputs`, `agent_request_file`,
+`agent_workflow_file`, `logs`, a mode-specific `summary`, and an `attribution` block with
+`citation_keys`. Pass `--runId`, `--agentRequestFile`, and `--agentWorkflowFile` for a complete
+audit trail. Report the genome build separately when annotation/pathway steps run (it is recorded
+by those skills' own metadata).
+
+Expression summaries under `expressionSummary/` use the same pattern with
+`logs/expression_summary.log` and reproducibility CLI flags on `expression_summary.py`.

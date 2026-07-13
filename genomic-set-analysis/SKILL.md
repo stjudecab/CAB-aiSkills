@@ -15,12 +15,13 @@ description: >-
 license: CC-BY-NC-SA-4.0
 compatibility: >-
   Requires Python 3.8-3.9 (Intervene 0.6.4 imports collections.Iterable, removed in 3.10+) with
-  the Intervene CLI (conda install bioconda::intervene), bedtools, pybedtools, pandas, numpy.
-  Install via the bundled environment.yml (conda env create -f environment.yml). Expression
-  summaries additionally need scipy, seaborn, and matplotlib. Annotation and pathway enrichment
-  are delegated to the sibling skills genomic-regions-annotation and pathway-enrichment-enrichr
-  (the latter needs HTTPS access to maayanlab.cloud). Local filesystem for overlap; no network
-  needed for the overlap step.
+  the Intervene CLI (bioconda::intervene), bedtools, pybedtools, pandas, numpy. On first run,
+  `scripts/ensure_env.sh` creates a persistent Conda/micromamba prefix at
+  `~/.cache/ai-skills-env/genomic-set-analysis/conda-env/` from `environment.yml` and reuses it
+  on later runs (not recreated each time). Expression summaries additionally need scipy, seaborn,
+  and matplotlib. Chained pathway enrichment needs xlsxwriter and requests. Annotation and
+  pathway enrichment are delegated to sibling skills. Local filesystem for overlap; network only
+  for Enrichr.
 metadata:
   author: Wojciech Rosikiewicz <rosikiewicz@gmail.com>
   version: "0.1.0"
@@ -87,17 +88,57 @@ genome, **ask for it before running those steps**. The overlap/plot step itself 
 genome and may proceed. Supported builds are those of the annotation skill: `hg38`, `hg19`,
 `mm10`, `mm9`, `sacCer3`.
 
+## Persistent runtime environment (CRITICAL)
+
+Do **not** run `conda env create -f environment.yml` on every skill invocation. The bundled
+helper creates a **reusable** Conda/micromamba prefix once and reuses it:
+
+| Item | Location / command |
+|------|------------------|
+| Cache root | `~/.cache/ai-skills-env/genomic-set-analysis/` |
+| Environment prefix | `~/.cache/ai-skills-env/genomic-set-analysis/conda-env/` |
+| Setup helper | `scripts/ensure_env.sh` |
+| Shell wrapper | `scripts/run_with_skill_env.sh <script> [args…]` |
+
+**Agent procedure:**
+
+1. Before the first overlap/filter/expression command, run `bash scripts/ensure_env.sh` once (or
+   call the Python scripts directly—they bootstrap automatically via `scripts/skill_env.py`).
+2. On later runs, reuse the same cache; **do not** recreate the environment unless
+   `environment.yml` changed or the user asks for a clean rebuild.
+3. For shell commands, prefer either direct Python script invocation (auto-bootstrap) or
+   `bash scripts/run_with_skill_env.sh scripts/intervene_peaks_combine.py …`.
+
+**Force a clean rebuild** when dependencies change or the env is corrupted:
+
+```bash
+bash scripts/ensure_env.sh --force-rebuild
+# or delete manually:
+rm -rf ~/.cache/ai-skills-env/genomic-set-analysis
+```
+
+**Why Conda/micromamba (not venv):** this skill depends on Bioconda binaries (`intervene`,
+`bedtools`) in addition to Python packages. A plain venv cannot install those tools.
+
+Set `GENOMIC_SET_ANALYSIS_SKIP_ENV_BOOTSTRAP=1` only for pytest or when intentionally using a
+pre-activated dev environment.
+
 ## Reproducibility and documentation (CRITICAL)
 
-Scientific rigor requires an auditable record. For every run:
+Every skill run must leave a complete audit trail. For the overlap step:
 
-1. Run `intervene_peaks_combine.py`; it writes `run_metadata.json` (UTC run ID, exact command,
-   inputs, parameters, and **versions of Intervene, BEDTools, pybedtools, pandas, numpy, Python**)
-   and `logs/commands.log` (every Intervene command executed).
-2. When you invoke the sibling skills, **state and record the exact commands and tool versions**
-   they used (each writes its own `run_metadata.json`). Report the **genome build** used.
-3. In your summary to the user, list the method + versions for Intervene/BEDTools and for any
-   annotation (voom2anno/GENCODE build) and Enrichr libraries used.
+1. Create `agentResults/genomic-set-analysis-<YYYYMMDDTHHMMSSZ>/` (or a project-specific grouping under `agentResults/`).
+2. Write **`agent_request.txt`** (verbatim user prompt) and **`agent_workflow.md`** (input inventory, label shortening, manifest, exact CLI) before executing.
+3. Run `intervene_peaks_combine.py` with `--runId`, `--agentRequestFile`, and `--agentWorkflowFile` (or inline `--agentRequest` / `--agentWorkflow`).
+4. The script writes under `<outputDir>/<outputPrefix>.intervene/`:
+   - **`run_metadata.json`** — UTC run ID, exact command, inputs, parameters, tool versions (Intervene, BEDTools, pybedtools, pandas, numpy, Python), outputs, and log paths.
+   - **`logs/intervene_peaks_combine.log`** — full execution log.
+   - **`logs/commands.log`** — append-only record of the Python CLI and every Intervene shell command.
+   - **`agent_request.txt`** / **`agent_workflow.md`** — copied into the output directory when provided.
+5. When you invoke sibling skills (annotation, pathway, expression), **record their commands and versions** (each writes its own metadata). Report the **genome build** used.
+6. In your summary to the user, list the run directory, key deliverables, parameters, and method + versions from `run_metadata.json`.
+
+Expression summaries (`expression_summary.py`) follow the same contract under their `--outputDir` with `logs/expression_summary.log` and reproducibility flags.
 
 ## Availability of add-on modules
 
@@ -157,15 +198,22 @@ labels are already short and unique or the user supplied short names.
 
 ### Step 1 — Run the overlap (always)
 
-From the skill root (or with absolute paths):
+1. Create the run directory under `agentResults/` (e.g. `agentResults/genomic-set-analysis-<runId>/`).
+2. Write `agent_request.txt` and `agent_workflow.md` documenting inputs, label choices, and the CLI below.
+3. Execute from the skill root (or with absolute paths). Scripts auto-bootstrap the persistent
+   env at `~/.cache/ai-skills-env/genomic-set-analysis/conda-env/`; do not recreate Conda envs
+   each run:
 
 ```bash
 python scripts/intervene_peaks_combine.py \
   -i examples/peaksFactorA.bed,examples/peaksFactorB.bed,examples/peaksFactorC.bed \
   -n FactorA,FactorB,FactorC \
   -o factorOverlap \
-  --outputDir agentResults \
-  --toPlot venn,upset
+  --outputDir agentResults/genomic-set-analysis-<runId> \
+  --toPlot venn,upset \
+  --runId <YYYYMMDDTHHMMSSZ> \
+  --agentRequestFile agent_request.txt \
+  --agentWorkflowFile agent_workflow.md
 ```
 
 This creates `agentResults/factorOverlap.intervene/` with the membership matrix, merged BED,
@@ -274,6 +322,9 @@ step (Intervene/BEDTools, annotation/GENCODE build, Enrichr libraries). Point th
 
 | Script | Role |
 |--------|------|
+| [scripts/ensure_env.sh](scripts/ensure_env.sh) | Create/reuse persistent Conda env under `~/.cache/ai-skills-env/genomic-set-analysis/` |
+| [scripts/skill_env.py](scripts/skill_env.py) | Python bootstrap used by CLI entrypoints |
+| [scripts/run_with_skill_env.sh](scripts/run_with_skill_env.sh) | Shell wrapper to run any command in the skill env |
 | [scripts/intervene_peaks_combine.py](scripts/intervene_peaks_combine.py) | Core overlap: union, matrix, sectors, Intervene plots, staging, metadata. |
 | [scripts/filter_gmt_for_pathway.py](scripts/filter_gmt_for_pathway.py) | Filter GMTs before pathway enrichment (default ≥5 genes; top 10 intersections). |
 | [scripts/expression_summary.py](scripts/expression_summary.py) | Gated boxplots/heatmaps for genes per sector from a GMT + matrix + conditions. |
@@ -293,7 +344,8 @@ Before finishing verify:
 
 - ≥2 region files (or a valid GMT/TSV); all paths exist; labels match inputs.
 - Analysis labels are short (≤15 chars when possible), unique, and recorded in `setLabelsManifest.tsv`.
-- The overlap step exited 0 and produced the matrix, `sets/`, and `run_metadata.json`.
+- The overlap step exited 0 and produced the matrix, `sets/`, `run_metadata.json`, and `logs/intervene_peaks_combine.log`.
+- `agent_request.txt` and `agent_workflow.md` exist when the agent prepared them (or were passed via CLI flags).
 - If annotation/pathway/expression ran, the **genome build was explicitly confirmed** and recorded.
 - Pathway enrichment used the default filter (top 10 intersections with ≥5 genes; originals with
   ≥5 genes) unless the user overrode it; filter manifest TSV(s) exist.
@@ -308,8 +360,9 @@ Before finishing verify:
   running; do not pass verbose basenames/GMT names through to filenames when shorter unique labels
   are obvious.
 - **Genome build missing** for annotation/pathway/expression → ask; do not assume.
-- **Intervene/BEDTools not installed** → create the env from `environment.yml`
-  (`conda env create -f environment.yml`) or `conda install bioconda::intervene`; do not fake plots.
+- **Intervene/BEDTools not installed** → run `bash scripts/ensure_env.sh` once (creates
+  `~/.cache/ai-skills-env/genomic-set-analysis/conda-env/`). If that fails, install micromamba,
+  mamba, or conda. Do not fake plots.
 - **`ImportError: cannot import name 'Iterable' from 'collections'`** → the env is on Python ≥3.10;
   Intervene 0.6.4 needs Python 3.8–3.9. Recreate the env pinned to `python<3.10`.
 - **Pairwise plot warns `DataFrame object has no attribute 'ix'`** → a known Intervene/pandas

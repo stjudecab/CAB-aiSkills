@@ -243,4 +243,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    from skill_env import bootstrap
+
+    bootstrap()
     main()

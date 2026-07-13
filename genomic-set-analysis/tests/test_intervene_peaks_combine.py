@@ -9,6 +9,7 @@ helper, and the reproducibility metadata. Region (BED) mode is covered only when
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -23,9 +24,13 @@ import intervene_peaks_combine as core  # noqa: E402
 
 def test_help_runs():
     """The CLI ``--help`` exits successfully without heavy optional dependencies."""
+    env = os.environ.copy()
+    env["GENOMIC_SET_ANALYSIS_SKIP_ENV_BOOTSTRAP"] = "1"
     result = subprocess.run(
         [sys.executable, str(SCRIPTS / "intervene_peaks_combine.py"), "--help"],
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        env=env,
     )
     assert result.returncode == 0
     assert b"Intervene" in result.stdout
@@ -93,10 +98,14 @@ def test_gene_set_mode_end_to_end(tmp_path):
     """GMT mode with plotting disabled writes the matrix, GMTs, and metadata."""
     gmt = tmp_path / "in.gmt"
     gmt.write_text("SetA\td\tG1\tG2\tG3\nSetB\td\tG2\tG3\tG4\n")
+    agentRequest = tmp_path / "request.txt"
+    agentRequest.write_text("overlap these gene sets\n")
     result = subprocess.run(
         [sys.executable, str(SCRIPTS / "intervene_peaks_combine.py"),
          "-i", str(gmt), "-o", "demo", "--outputDir", str(tmp_path),
-         "--toPlot", "ignore", "--overwrite"],
+         "--toPlot", "ignore", "--overwrite",
+         "--runId", "20260709T125435Z",
+         "--agentRequestFile", str(agentRequest)],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
     )
     assert result.returncode == 0, result.stdout.decode()
@@ -104,8 +113,14 @@ def test_gene_set_mode_end_to_end(tmp_path):
     assert (outDir / "demo.matrix.tsv").is_file()
     assert (outDir / "originalSets.gmt").is_file()
     assert (outDir / "setLabelsManifest.tsv").is_file()
+    assert (outDir / "agent_request.txt").is_file()
+    assert (outDir / "logs" / "intervene_peaks_combine.log").is_file()
+    assert (outDir / "logs" / "commands.log").is_file()
     metadata = json.loads((outDir / "run_metadata.json").read_text())
     assert metadata["mode"] == "geneSet"
+    assert metadata["run_id"] == "20260709T125435Z"
+    assert metadata["agent_request_file"] is not None
+    assert metadata["logs"]["commands.log"]
     assert metadata["tool_versions"]["python"].startswith("3")
     assert "intervene" in metadata["citation_keys"]
 

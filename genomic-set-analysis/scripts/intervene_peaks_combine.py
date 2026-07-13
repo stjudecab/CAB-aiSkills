@@ -48,6 +48,15 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
+from run_logging import (
+    addReproducibilityArguments,
+    appendCommandLog,
+    commandLineString,
+    configureLogging,
+    runIdUtc,
+    writeAgentArtifacts,
+)
+
 LOGGER = logging.getLogger("intervene_peaks_combine")
 
 GENOMIC_SUFFIXES = (".bed", ".narrowpeak", ".narrowPeak", ".broadPeak", ".broadpeak")
@@ -132,43 +141,6 @@ def writeSetLabelsManifest(
     frame.to_csv(manifestPath, sep="\t", index=False)
     LOGGER.info("Wrote set label manifest: %s", manifestPath)
     return manifestPath
-
-
-def configureLogging(logFile: Optional[Path] = None) -> None:
-    """Configure root logging to stderr and, optionally, a file.
-
-    Args:
-        logFile (Optional[Path]): File path for a persistent log. When ``None`` only a
-            stream handler is attached.
-
-    Returns:
-        None.
-    """
-    root = logging.getLogger()
-    for handler in root.handlers[:]:
-        root.removeHandler(handler)
-        handler.close()
-    handlers: List[logging.Handler] = [logging.StreamHandler(sys.stderr)]
-    if logFile is not None:
-        logFile.parent.mkdir(parents=True, exist_ok=True)
-        handlers.append(logging.FileHandler(logFile))
-    formatter = logging.Formatter(
-        "### [%(asctime)s] %(levelname)s %(name)s: %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-    for handler in handlers:
-        handler.setFormatter(formatter)
-        root.addHandler(handler)
-    root.setLevel(logging.INFO)
-
-
-def runIdUtc() -> str:
-    """Return a UTC run ID in ``YYYYMMDDTHHMMSSZ`` format.
-
-    Returns:
-        str: Timestamp-based run ID suitable for run-scoped metadata.
-    """
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
 def commandOutput(command: List[str]) -> str:
@@ -317,6 +289,7 @@ def parseArguments() -> argparse.Namespace:
         action="store_true",
         help="Validate inputs and print the planned Intervene commands without executing.",
     )
+    addReproducibilityArguments(parser)
     args = parser.parse_args()
 
     args.inputList, args.gmtMode, args.gmtContent, args.names, args.originalLabels = resolveInputs(
@@ -733,12 +706,54 @@ def runGenomicMode(args: argparse.Namespace, interveneDir: Path, commandsLog: Pa
     return {"mergedRegions": len(merged), "stagedOriginalInputs": staged}
 
 
+def collectExistingOutputs(interveneDir: Path, prefix: str, gmtMode: bool) -> List[str]:
+    """Return output artifact paths that exist after a successful run.
+
+    Args:
+        interveneDir (Path): The ``<prefix>.intervene/`` output directory.
+        prefix (str): Analysis output prefix.
+        gmtMode (bool): Whether the run used gene-set (GMT) input.
+
+    Returns:
+        List[str]: Absolute POSIX paths to files that were written.
+    """
+    candidates: List[Path] = [
+        interveneDir / "run_metadata.json",
+        interveneDir / "setLabelsManifest.tsv",
+        interveneDir / "agent_request.txt",
+        interveneDir / "agent_workflow.md",
+        interveneDir / "logs" / "intervene_peaks_combine.log",
+        interveneDir / "logs" / "commands.log",
+    ]
+    if gmtMode:
+        candidates.extend(
+            [
+                interveneDir / f"{prefix}.matrix.tsv",
+                interveneDir / "intersections.gmt",
+                interveneDir / "originalSets.gmt",
+            ]
+        )
+    else:
+        candidates.extend(
+            [
+                interveneDir / f"{prefix}.mergedPeaks_all.bed",
+                interveneDir / f"{prefix}.mergedPeaks_matrix.tsv",
+            ]
+        )
+    for pattern in ("*.pdf", f"{prefix}.intervene_*.pdf"):
+        candidates.extend(Path(p) for p in glob.glob(str(interveneDir / pattern)))
+    return sorted({path.resolve().as_posix() for path in candidates if path.is_file()})
+
+
 def writeRunMetadata(
     args: argparse.Namespace,
     interveneDir: Path,
     runId: str,
     versions: Dict[str, str],
     summary: Dict[str, object],
+    agentRequestPath: Optional[Path],
+    agentWorkflowPath: Optional[Path],
+    logs: Dict[str, str],
 ) -> None:
     """Write ``run_metadata.json`` capturing inputs, parameters, and tool versions.
 
@@ -748,6 +763,9 @@ def writeRunMetadata(
         runId (str): UTC run ID for this execution.
         versions (Dict[str, str]): Tool version strings.
         summary (Dict[str, object]): Mode-specific summary values.
+        agentRequestPath (Optional[Path]): Path to saved user request text.
+        agentWorkflowPath (Optional[Path]): Path to saved agent workflow notes.
+        logs (Dict[str, str]): Paths to script and command logs.
 
     Returns:
         None.
@@ -757,16 +775,18 @@ def writeRunMetadata(
         "script": "intervene_peaks_combine.py",
         "run_id": runId,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        "command": "python " + " ".join(sys.argv),
+        "command": commandLineString(),
         "working_directory": os.getcwd(),
         "mode": "geneSet" if args.gmtMode else "genomic",
         "inputs": args.inputList,
         "labels": args.names,
         "original_labels": args.originalLabels,
         "set_labels_manifest": str(interveneDir / "setLabelsManifest.tsv"),
-        "output_directory": str(interveneDir),
+        "output_directory": str(interveneDir.resolve()),
+        "output_prefix": args.outputPrefix,
         "parameters": {
             "outputPrefix": args.outputPrefix,
+            "outputDir": args.outputDir,
             "figSize": args.figSizeParsed,
             "toPlot": args.toPlot,
             "mbColor": args.mbColor,
@@ -775,11 +795,18 @@ def writeRunMetadata(
         },
         "tool_versions": versions,
         "summary": summary,
+        "outputs": collectExistingOutputs(interveneDir, args.outputPrefix, args.gmtMode),
+        "agent_request_file": agentRequestPath.resolve().as_posix() if agentRequestPath else None,
+        "agent_workflow_file": agentWorkflowPath.resolve().as_posix() if agentWorkflowPath else None,
+        "logs": logs,
         "citation_keys": ["intervene", "bedtools", "pybedtools"],
         "attribution": {
             "method": "Intervene (Khan & Mathelier, BMC Bioinformatics 2017); BEDTools (Quinlan & Hall 2010).",
             "skill_package": "CAB-aiSkills genomic-set-analysis (orchestration only).",
-            "note": "Annotation, pathway enrichment, motif, deeptools, and expression are run by the agent via sibling skills.",
+            "note": (
+                "Annotation, pathway enrichment, motif, deeptools, and expression are run by the "
+                "agent via sibling skills; pass --agentRequest/--agentWorkflow to record agent steps."
+            ),
         },
     }
     with open(interveneDir / "run_metadata.json", "w", encoding="utf-8") as handle:
@@ -796,9 +823,8 @@ def main() -> None:
     Raises:
         FileExistsError: When the output directory exists and ``--overwrite`` was not given.
     """
-    configureLogging()
-    runId = runIdUtc()
     args = parseArguments()
+    runId = args.runId or runIdUtc()
 
     interveneDir = Path(args.outputDir) / f"{args.outputPrefix}.intervene"
     if interveneDir.exists() and not args.overwrite and not args.dryRun:
@@ -808,13 +834,31 @@ def main() -> None:
     interveneDir.mkdir(parents=True, exist_ok=True)
     logsDir = interveneDir / "logs"
     logsDir.mkdir(parents=True, exist_ok=True)
-    configureLogging(logsDir / "intervene_peaks_combine.log")
+    scriptLog = logsDir / "intervene_peaks_combine.log"
     commandsLog = logsDir / "commands.log"
+    configureLogging(scriptLog)
+
+    command = commandLineString()
+    appendCommandLog(commandsLog, runId, command)
+    LOGGER.info("Run ID: %s", runId)
+    LOGGER.info("Command: %s", command)
+    LOGGER.info("Working directory: %s", os.getcwd())
+    LOGGER.info("Output directory: %s", interveneDir.resolve())
+
+    agentRequestPath, agentWorkflowPath = writeAgentArtifacts(interveneDir, args)
+    if agentRequestPath:
+        LOGGER.info("Wrote user request: %s", agentRequestPath)
+    if agentWorkflowPath:
+        LOGGER.info("Wrote agent workflow: %s", agentWorkflowPath)
 
     versions = collectToolVersions()
-    LOGGER.info("Run ID: %s", runId)
     LOGGER.info("Tool versions: %s", json.dumps(versions))
-    LOGGER.info("Mode: %s | inputs: %d | labels: %s", "geneSet" if args.gmtMode else "genomic", len(args.inputList), args.names)
+    LOGGER.info(
+        "Mode: %s | inputs: %d | labels: %s",
+        "geneSet" if args.gmtMode else "genomic",
+        len(args.inputList),
+        args.names,
+    )
 
     if args.gmtMode:
         runGeneSetMode(args, interveneDir, commandsLog)
@@ -832,9 +876,24 @@ def main() -> None:
     )
     summary["setLabelsManifest"] = str(manifestPath)
 
-    writeRunMetadata(args, interveneDir, runId, versions, summary)
+    writeRunMetadata(
+        args,
+        interveneDir,
+        runId,
+        versions,
+        summary,
+        agentRequestPath,
+        agentWorkflowPath,
+        {
+            "intervene_peaks_combine.log": scriptLog.resolve().as_posix(),
+            "commands.log": commandsLog.resolve().as_posix(),
+        },
+    )
     LOGGER.info("Done. Results under: %s", interveneDir)
 
 
 if __name__ == "__main__":
+    from skill_env import bootstrap
+
+    bootstrap()
     main()

@@ -65,7 +65,7 @@ Shared axis limits are computed across **all** panels in a grid for direct compa
 |------|---------|
 | `--labelPoints GENE1,GENE2` | Highlight IDs present in `--nameCol` (or regions mapped via `Gene_2kb` when `--identifyRegionByGeneName Yes`) |
 | `--plotGeneNames Yes\|No` | Draw text labels (default Yes; use No for many points) |
-| `--plotDiffGeneMark Yes\|No` | Append (↑)/(↓)/(≈) to labels from differential status |
+| `--plotDiffGeneMark Yes\|No` | Append (↑)/(↓)/(NS) to labels from differential status (auto-enabled when `--labelPoints` is set) |
 
 ## Thresholds
 

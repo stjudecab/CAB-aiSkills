@@ -538,7 +538,7 @@ def _plot_single_volcano(
                                 return " (↑)"
                             if row[sig_col] < fdr_cut and row[fc_col] < -fc_thr:
                                 return " (↓)"
-                            return " (≈)"
+                            return " (NS)"
 
                         interest["label_text"] = interest[name_col] + interest.apply(_suffix, axis=1)
                         interest_display = interest.copy()
@@ -713,7 +713,7 @@ def _plot_single_ma(
                                 return " (↑)"
                             if row[fc_col] < -fc_thr:
                                 return " (↓)"
-                            return " (≈)"
+                            return " (NS)"
 
                         interest["label_text"] = interest[name_col] + interest.apply(_suffix, axis=1)
 
@@ -1253,9 +1253,12 @@ def main():
     ap.add_argument(
         "--plotDiffGeneMark",
         help=(
-            "When Yes and --plotGeneNames is Yes, append (↑)/(↓)/(≈) to each label "
-            "from differential status. Works best for a single region; many labels "
-            "overlap. WARNING: not intended for dense label sets. Default: %(default)s."
+            "When Yes and --plotGeneNames is Yes, append (↑)/(↓)/(NS) to each label "
+            "from differential status (↑/↓ = FDR and fold-change pass volcano "
+            "thresholds; NS = not significant). Auto-enabled when --labelPoints is "
+            "set unless you pass --plotDiffGeneMark explicitly. Works best for a "
+            "single region; many labels overlap. WARNING: not intended for dense "
+            "label sets. Default: %(default)s."
         ),
         action="store",
         type=str2bool,
@@ -1422,6 +1425,14 @@ def main():
         if args.labelPoints
         else None
     )
+    plot_diff_gene_mark = args.plotDiffGeneMark
+    if label_list and "--plotDiffGeneMark" not in sys.argv:
+        plot_diff_gene_mark = True
+        args.plotDiffGeneMark = True
+        lgr.info(
+            "Auto-enabled plotDiffGeneMark because --labelPoints was provided "
+            "(append ↑/↓/NS to labels from differential status)."
+        )
 
     ### if the aveExprCol is set to "ignore" then we will not plot the MA grid even its specified in the plotsToPlot.
     if args.aveExprCol.lower() == "ignore":
@@ -1471,7 +1482,7 @@ def main():
         numFigRow=args.rows,
         labelPoints=label_list,
         plotGeneNames=args.plotGeneNames,
-        plotDiffGeneMark=args.plotDiffGeneMark,
+        plotDiffGeneMark=plot_diff_gene_mark,
         identifyRegionByGeneName=args.identifyRegionByGeneName,
         customAbsMaxFC=custom_abs_max_fc,
         customMaxP=custom_max_p,

@@ -19,24 +19,44 @@ skills, and motif enrichment / deeptools heatmaps are **planned but not yet avai
 
 ## Environment
 
-The simplest path is the bundled conda environment (recommended), which installs the Intervene and
-BEDTools binaries together with all Python dependencies:
+This skill depends on **Bioconda binaries** (`intervene`, `bedtools`) plus Python packages, so it
+uses a **persistent Conda/micromamba prefix**—not a plain venv and not a global install.
+
+On first run, `scripts/ensure_env.sh` creates the environment once under your home cache and
+reuses it on later runs:
+
+| Item | Path |
+|------|------|
+| Cache root | `~/.cache/ai-skills-env/genomic-set-analysis/` |
+| Environment prefix | `~/.cache/ai-skills-env/genomic-set-analysis/conda-env/` |
 
 ```bash
 cd genomic-set-analysis
-conda env create -f environment.yml   # creates env "genomicSetAnalysis"
-conda activate genomicSetAnalysis
+bash scripts/ensure_env.sh                     # create if missing; no-op if ready
+bash scripts/run_with_skill_env.sh scripts/intervene_peaks_combine.py --help
+# or invoke Python scripts directly (they auto-bootstrap via scripts/skill_env.py):
+python scripts/intervene_peaks_combine.py --help
+```
+
+**Force a clean rebuild** after `environment.yml` changes or if the env is corrupted:
+
+```bash
+bash scripts/ensure_env.sh --force-rebuild
+# or:
+rm -rf ~/.cache/ai-skills-env/genomic-set-analysis
 ```
 
 - **Python 3.8–3.9 is required.** Intervene 0.6.4 imports `collections.Iterable`, which was removed
   in Python 3.10, so the interpreter must stay `<3.10`. `environment.yml` pins this for you.
-- **External binaries** if installing manually instead of via `environment.yml`:
+- **Prerequisite:** micromamba, mamba, or conda on `PATH` (the helper picks micromamba first when
+  available, otherwise mamba, then conda).
+- **Manual install** (only if you cannot use the cache helper):
 
 ```bash
-conda install -c bioconda -c conda-forge "python<3.10" intervene bedtools   # bedtools comes with intervene
+conda env create -p ~/.cache/ai-skills-env/genomic-set-analysis/conda-env -f environment.yml
 ```
 
-- **Python packages** (into an existing Python 3.8/3.9 env):
+- **Python-only packages** (into an existing Python 3.8/3.9 env without Bioconda tools):
 
 ```bash
 pip install -r requirements.txt
@@ -129,6 +149,9 @@ write filtered GMTs and filter-manifest TSVs before calling Enrichr.
 | Path | Role |
 |------|------|
 | [SKILL.md](SKILL.md) | Agent workflow, genome-build safety, chaining, outputs |
+| [scripts/ensure_env.sh](scripts/ensure_env.sh) | Persistent Conda env under `~/.cache/ai-skills-env/genomic-set-analysis/` |
+| [scripts/run_with_skill_env.sh](scripts/run_with_skill_env.sh) | Run commands inside the cached skill env |
+| [scripts/skill_env.py](scripts/skill_env.py) | Python bootstrap for CLI scripts |
 | [scripts/intervene_peaks_combine.py](scripts/intervene_peaks_combine.py) | Core overlap wrapper |
 | [scripts/filter_gmt_for_pathway.py](scripts/filter_gmt_for_pathway.py) | Filter GMTs before Enrichr (default ≥5 genes; top 10 intersections) |
 | [scripts/expression_summary.py](scripts/expression_summary.py) | Gated expression boxplots/heatmaps |
@@ -141,10 +164,10 @@ write filtered GMTs and filter-manifest TSVs before calling Enrichr.
 
 ```bash
 cd genomic-set-analysis
-conda env create -f environment.yml && conda activate genomicSetAnalysis   # or pip install -r requirements.txt into a 3.8/3.9 env
+bash scripts/ensure_env.sh
+GENOMIC_SET_ANALYSIS_SKIP_ENV_BOOTSTRAP=1 python -m pytest tests -q
 python scripts/intervene_peaks_combine.py --help
 python scripts/expression_summary.py --help
-python -m pytest tests -q
 ```
 
 Tests that would need the Intervene/BEDTools binaries are avoided; GMT mode runs with plotting
