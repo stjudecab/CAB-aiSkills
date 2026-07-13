@@ -179,7 +179,7 @@ See [references/citations.md](references/citations.md).
 
 | Layer | Credit |
 |-------|--------|
-| Skill package | CAB-aiSkills `genomic-regions-annotation` |
+| Skill package | Hasan Al Reza; Wojciech Rosikiewicz — CAB-aiSkills `genomic-regions-annotation` ([AUTHORS.md](../AUTHORS.md)) |
 | Gene / feature scripts | Per file headers (`voom2anno`, annotateGenomicFeatures, OrganizeAnnotationResults) |
 | Chromatin | `BEDinContext.py` / prepare helpers; Roadmap ChromHMM; ENCODE Segway; BEDTools; UCSC liftOver |
 

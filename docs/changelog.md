@@ -6,6 +6,7 @@ Newest entries first.
 
 - Removed accidental macOS AppleDouble `._*` sidecars and a committed matplotlib cache under `genomic-regions-annotation/tmp/`.
 - Extended repo and skill `.gitignore` to ignore `._*`, skill-local `tmp/`, and reinforce `.DS_Store` / `.pytest_cache/` exclusions.
+- Updated [AUTHORS.md](../AUTHORS.md) so **`genomic-regions-annotation`** lists both **Hasan Al Reza** and **Wojciech Rosikiewicz** as skill packagers / authors.
 
 ## 2026-07-13
 

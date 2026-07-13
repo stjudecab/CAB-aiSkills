@@ -13,7 +13,7 @@
 | Field | Value |
 |-------|-------|
 | **Role** | Skill author / packager (workflow, wrapper, documentation, and agent instructions) |
-| **Skill author(s)** | Named in [AUTHORS.md](../../AUTHORS.md) (Skills table) and `SKILL.md` -> `metadata.author` |
+| **Skill author(s)** | Hasan Al Reza; Wojciech Rosikiewicz — see [AUTHORS.md](../../AUTHORS.md) Skills table and `SKILL.md` → `metadata.author` |
 | **Collection** | CAB-aiSkills skill `genomic-regions-annotation` |
 | **License** | [CC BY-NC-SA 4.0](../../LICENSE.txt) for skill packaging and files covered by repository licensing |
 
