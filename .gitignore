@@ -33,6 +33,7 @@ build/
 
 # Tooling / OS
 .DS_Store
+._*
 Thumbs.db
 .idea/
 .vscode/

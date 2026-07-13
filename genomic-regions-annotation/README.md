@@ -51,6 +51,7 @@ Prepared dense BEDs live under `cache/{collection}_{genome}_dense.bed` (not comm
 - Copy or symlink this skill directory into your agent skill path.
 - Preserve `scripts/`, `annotations/`, `environment/`, and `references/`.
 - `cache/` is created at runtime and gitignored.
+- `tmp/` (e.g. matplotlib config cache) is also gitignored and must not be committed.
 
 ---
 
@@ -79,6 +80,7 @@ genomic-regions-annotation/
 ├── example_input/
 │   └── chromatin/        # CTCF_K562_ENCFF396BZQ.bed, POLR2A_K562_ENCFF285MBX.bed, exampleInput.lst
 ├── cache/                # gitignored prepared models
+├── tmp/                  # gitignored local runtime cache
 ├── tests/fixtures/
 └── environment/epi_anno_env.yml
 ```

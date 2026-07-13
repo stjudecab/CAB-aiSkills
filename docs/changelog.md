@@ -2,6 +2,11 @@
 
 Newest entries first.
 
+## 2026-07-13 (cleanup)
+
+- Removed accidental macOS AppleDouble `._*` sidecars and a committed matplotlib cache under `genomic-regions-annotation/tmp/`.
+- Extended repo and skill `.gitignore` to ignore `._*`, skill-local `tmp/`, and reinforce `.DS_Store` / `.pytest_cache/` exclusions.
+
 ## 2026-07-13
 
 - Extended **`genomic-regions-annotation`** with a chromatin-state annotation branch (ChromHMM Roadmap, Segway/ENCODE, custom dense BED).
