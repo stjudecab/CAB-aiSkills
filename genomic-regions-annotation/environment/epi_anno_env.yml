@@ -1,3 +1,5 @@
+# Persistent env via: bash scripts/ensure_env.sh
+# Cache: ~/.cache/cursor-skills/genomic-regions-annotation/conda-env/
 name: epi_anno_env
 channels:
   - conda-forge
@@ -16,3 +18,6 @@ dependencies:
   - python-kaleido
   - xlsxwriter
   - adjusttext
+  - natsort
+  - ucsc-liftover
+  - pytest

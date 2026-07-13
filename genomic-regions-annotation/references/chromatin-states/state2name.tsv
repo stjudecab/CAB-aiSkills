@@ -1,0 +1,15 @@
+E1	Active TSS
+E2	Flanking Active TSS
+E3	Transcr. at gene 5 and 3 ends
+E4	Strong transcription
+E5	Weak transcription
+E6	Genic enhancers
+E7	Enhancers
+E8	ZNF genes and repeats
+E9	Heterochromatin
+E10	Bivalent-Poised_TSS
+E11	Flanking Bivalent TSS-Enh
+E12	Bivalent Enhancer
+E13	Repressed PolyComb
+E14	Weak Repressed PolyComb
+E15	Quiescent-Low

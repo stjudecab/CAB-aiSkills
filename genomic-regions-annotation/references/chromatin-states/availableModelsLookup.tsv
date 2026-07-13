@@ -1,0 +1,151 @@
+Description	ChromHMM collection(s)	Segway collection(s)
+Foreskin Melanocyte	E059,  E061	ENCFF057CIV, ENCFF913PHL
+IMR90	E017	ENCFF212LYI
+K562	E123	ENCFF089AXD
+HepG2	E118	ENCFF393SXJ
+HUES64	E016	ENCFF491WQH
+HUES48	E014	ENCFF580JOV
+H9	E008	ENCFF872XRN
+H9 Derived Neuronal Progenitor	E009	ENCFF422UYG
+H9 Derived Neuron	E010	ENCFF420AIM
+H1	E003	ENCFF828JJT
+HUES6	E015	ENCFF870IVU
+iPS-18	E019	ENCFF105WPE
+iPS-20b	E020	ENCFF161QPS
+iPS DF 6.9	E021	ENCFF707KUS
+iPS DF 19.11	E022	ENCFF241SVT
+ES-I3	E001	ENCFF707CBA
+H7 (ES-WA7)	E002	ENCFF028ZWL, ENCFF645UGL
+H1 BMP4 Derived Mesendoderm	E004	ENCFF241EAU
+H1 BMP4 Derived Trophoblast	E005	ENCFF685FRZ
+H1 Derived Mesenchymal Stem	E006	ENCFF132DRZ, ENCFF441FKC
+H1 Derived Neuronal Progenitor	E007	ENCFF422UYG
+hESC Derived CD184+ Endoderm	E011	ENCFF480WAP
+hESC Derived CD56+ Ectoderm	E012	ENCFF095SYK
+hESC Derived CD56+ Mesoderm	E013	ENCFF662MJX
+iPS-15b	E018	ENCFF497DHN
+Mesenchymal Stem Cell Derived Adipocyte	E023	ENCFF603ZFR
+ES-UCSF4	E024	---
+Adipose Derived Mesenchymal Stem Cell	E025	ENCFF132DRZ, ENCFF441FKC
+Bone Marrow Derived Mesenchymal Stem Cell	E026	ENCFF132DRZ, ENCFF441FKC
+Breast Myoepithelial	E027	ENCFF457BIN
+Breast variant Human Mammary Epithelial (vHMEC)	E028	ENCFF108CAF, ENCFF483DPU
+Primary monocytes from peripheral blood	E029	ENCFF065TKH, ENCFF749XCR
+Primary neutrophils from peripheral blood	E030	---
+Primary B cells from cord blood	E031	ENCFF134LMV
+Primary B cells from peripheral blood	E032	ENCFF134LMV
+Primary T cells from cord blood	E033	ENCFF028REP, ENCFF266EQD
+Primary T cells from peripheral blood	E034	ENCFF028REP, ENCFF266EQD
+Primary hematopoietic stem cells	E035	---
+Primary hematopoietic stem cells short term culture	E036	---
+Primary T helper memory cells from peripheral blood	E037	ENCFF277ZKK, ENCFF519ZBL
+Primary T helper naive cells from peripheral blood	E038	ENCFF210SMU, ENCFF880DHD
+Primary T helper naive cells from peripheral blood	E039	ENCFF210SMU, ENCFF880DHD
+Primary T helper memory cells from peripheral blood	E040	ENCFF277ZKK, ENCFF519ZBL
+Primary T helper cells PMA-I stimulated	E041	ENCFF386ZTK, ENCFF770DFW
+Primary T helper 17 cells PMA-I stimulated	E042	ENCFF993VBX
+Primary T helper cells from peripheral blood	E043	ENCFF386ZTK, ENCFF770DFW
+Primary T regulatory cells from peripheral blood	E044	ENCFF378DDP
+Primary T cells effector/memory enriched from peripheral blood	E045	ENCFF708QLS
+Primary Natural Killer cells from peripheral blood	E046	ENCFF998SNL
+Primary T CD8+ naive cells from peripheral blood	E047	ENCFF757KLE
+Primary T CD8+ memory cells from peripheral blood	E048	ENCFF954WEV
+Mesenchymal Stem Cell Derived Chondrocyte	E049	ENCFF524XTL
+Primary hematopoietic stem cells G-CSF-mobilized Female	E050	---
+Primary hematopoietic stem cells G-CSF-mobilized Male	E051	---
+Muscle Satellite Cultured Cells	E052	ENCFF116VEC
+Cortex derived primary cultured neurospheres	E053	ENCFF422UYG
+Ganglion Eminence derived primary cultured neurospheres	E054	ENCFF422UYG
+Foreskin Fibroblast	E055,  E056	ENCFF089HWW, ENCFF304BGK, ENCFF849PRY, ENCFF925SYQ
+Foreskin Keratinocyte	E057,  E058	ENCFF423ADX, ENCFF860ORF
+Primary mononuclear cells from peripheral blood	E062	ENCFF659DOR
+Adipose Nuclei	E063	ENCFF004YEU
+Aorta	E065	ENCFF413IVJ
+Liver	E066	ENCFF737QTB
+Brain Angular Gyrus	E067	ENCFF386SRJ
+Brain Anterior Caudate	E068	ENCFF508PQI
+Brain Cingulate Gyrus	E069	ENCFF400KWY
+Brain Germinal Matrix	E070	---
+Brain Hippocampus Middle	E071	ENCFF667GKL
+Brain Inferior Temporal Lobe	E072	ENCFF525MSR
+Brain Dorsolateral Prefrontal Cortex	E073	ENCFF015FJK
+Brain Substantia Nigra	E074	ENCFF089LSR
+Colonic Mucosa	E075	ENCFF725HYN
+Colon Smooth Muscle	E076	ENCFF314OLC
+Duodenum Mucosa	E077	ENCFF665HYU
+Duodenum Smooth Muscle	E078	ENCFF276PHR
+Esophagus	E079	ENCFF451QJT
+Fetal Adrenal Gland	E080	ENCFF730QUM
+Fetal Brain Male	E081	ENCFF989PNJ
+Fetal Brain Female	E082	ENCFF989PNJ
+Fetal Heart	E083	ENCFF530JRB
+Fetal Intestine Large	E084	ENCFF773FCZ
+Fetal Intestine Small	E085	ENCFF824YJV, ENCFF848MPK
+Fetal Kidney	E086	ENCFF216FKQ
+Pancreatic Islets	E087	ENCFF303LPQ
+Fetal Lung	E088	ENCFF130BAY, ENCFF137NZI, ENCFF633OYE
+Fetal Muscle Trunk	E089	ENCFF986QPJ
+Fetal Muscle Leg	E090	ENCFF654PKF
+Placenta	E091	ENCFF146MFX
+Fetal Stomach	E092	ENCFF245FFX, ENCFF370MSL
+Fetal Thymus	E093	ENCFF724TKQ, ENCFF851GWT
+Gastric (Stomach)	E094	ENCFF311EYV, ENCFF370MSL
+Left Ventricle	E095	ENCFF386TOZ
+Lung	E096	ENCFF130BAY, ENCFF137NZI, ENCFF633OYE
+Ovary	E097	ENCFF017DMK
+Pancreas	E098	ENCFF758UIX (Panc1 cell line)
+Placenta Amnion	E099	ENCFF557FMU
+Psoas Muscle	E100	ENCFF661JZC
+Rectal Mucosa Donor 29	E101	ENCFF506WHF
+Rectal Mucosa Donor 31	E102	ENCFF506WHF
+Rectal Smooth Muscle	E103	ENCFF277KFS
+Right Atrium	E104	ENCFF786ZNY
+Right Ventricle	E105	ENCFF824WDJ
+Sigmoid Colon	E106	ENCFF299QFL
+Skeletal Muscle Male	E107	ENCFF487JVN, ENCFF810FXS
+Skeletal Muscle Female	E108	ENCFF487JVN, ENCFF810FXS
+Small Intestine	E109	ENCFF824YJV, ENCFF848MPK
+Stomach Mucosa	E110	ENCFF311EYV
+Stomach Smooth Muscle	E111	ENCFF262NAK
+Thymus	E112	ENCFF724TKQ, ENCFF851GWT
+Spleen	E113	ENCFF689XTT
+A549 EtOH 0.02pct Lung Carcinoma Cell Line	E114	ENCFF882RLQ (A549)
+Dnd41 TCell Leukemia Cell Line	E115	ENCFF166SIQ (DND-41)
+Lymphoblastoid Cells (GM12878 reference)	E116	ENCFF523YOT (GM06990), ENCFF377YLU (GM12892), ENCFF625YIV (GM12864), ENCFF921BGW (GM12865), ENCFF766PVJ (GM12891)
+HeLa-S3 Cervical Carcinoma Cell Line	E117	---
+HepG2 Hepatocellular Carcinoma Cell Line	E118	ENCFF393SXJ (HepG2)
+HMEC Mammary Epithelial Primary Cells	E119	ENCFF108CAF, ENCFF483DPU (mammary epithelial cell)
+HSMM Skeletal Muscle Myoblasts Cells	E120	ENCFF116VEC (skeletal muscle myoblast)
+HSMM cell derived Skeletal Muscle Myotubes Cells	E121	ENCFF118YAO (myotube)
+HUVEC Umbilical Vein Endothelial Primary Cells	E122	ENCFF722SBM (endothelial cell of umbilical vein)
+K562 Leukemia Cells	E123	ENCFF089AXD
+Monocytes-CD14+ RO01746 Primary Cells	E124	ENCFF065TKH, ENCFF749XCR (CD14-positive monocyte)
+NH-A Astrocytes Primary Cells	E125	ENCFF481YAX (astrocyte)
+NHDF-Ad Adult Dermal Fibroblast Primary Cells	E126	ENCFF951RTE (fibroblast of dermis)
+NHEK-Epidermal Keratinocyte Primary Cells	E127	ENCFF614SYL (keratinocyte)
+NHLF Lung Fibroblast Primary Cells	E128	ENCFF101AMQ, ENCFF607AWU (fibroblast of lung)
+Osteoblast Primary Cells	E129	ENCFF276EIW (osteoblast)
+SK-N-MC	---	ENCFF080OSA
+AG04450	---	ENCFF112IKD
+T47D	---	ENCFF123VZB
+HL-60	---	ENCFF234MAZ
+WERI-Rb-1	---	ENCFF244HQX
+LHCN-M2	---	ENCFF272VGJ
+AG04449	---	ENCFF334IYO
+HEK293	---	ENCFF388HYD
+NT2/D1	---	ENCFF393SOX
+Caco-2	---	ENCFF425PRO
+AG10803	---	ENCFF442IXL
+HCT116	---	ENCFF508MEC
+MCF-7	---	ENCFF525LDS
+SK-N-SH	---	ENCFF540WJA, ENCFF743WJN
+BJ	---	ENCFF576MTO
+NB4	---	ENCFF657VMA
+BE2C	---	ENCFF697FWA
+Ishikawa	---	ENCFF792AQT
+AG09309	---	ENCFF799TPD
+HGPS cell	---	ENCFF819BUC
+WI38	---	ENCFF847EBO
+H54	---	ENCFF902JIW
+HFF-Myc	---	ENCFF904VUV
+AG09319	---	ENCFF957DSA

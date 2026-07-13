@@ -1,0 +1,4 @@
+track name="E001_15_coreMarks_hg38lift" description="test" visibility=1 itemRgb="On"
+chr1	10000	10600	9_Het	0	.	10000	10600	138,145,208
+chr1	10600	96080	15_Quies	0	.	10600	96080	255,250,230
+chr1	96276	96476	15_Quies	0	.	96276	96476	255,250,230

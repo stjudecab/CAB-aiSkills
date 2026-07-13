@@ -4,374 +4,207 @@
 
 # Genomic Regions Annotation Pipeline — Agent Skill
 
-Portable skill package for annotation and interpretation of genomic regions from epigenetic NGS datasets including ATAC-seq, ChIP-seq, CUT&Tag, CUT&RUN, and differential region analyses. The workflow performs nearby-gene annotation, genomic feature assignment, reporting, visualization, and GSEA-ready export generation. Agent instructions live in [SKILL.md](SKILL.md).
+Portable skill for annotating genomic regions from epigenetic NGS (ATAC-seq, ChIP-seq, CUT&Tag, CUT&RUN, differential peaks) to:
+
+1. **Nearby genes**
+2. **Genomic features** (exclusive cascading assignment)
+3. **Chromatin states** (ChromHMM Roadmap, Segway/ENCODE, or custom dense BED)
+
+Agent instructions: [SKILL.md](SKILL.md).
+
+| Mode | Methods | Primary scripts |
+|------|---------|-----------------|
+| Genes | [references/methods-gene-annotation.md](references/methods-gene-annotation.md) | `voom2anno.sh` via wrapper |
+| Genomic features | [references/methods-genomic-features.md](references/methods-genomic-features.md) | `annotateGenomicFeatures.py` → `OrganizeAnnotationResults.py` |
+| Chromatin states | [references/methods-chromatin-states.md](references/methods-chromatin-states.md) | `prepare_chromatin_model.py` → `BEDinContext.py` (**no** OrganizeAnnotationResults) |
+
+Chromatin ops checklist: [references/chromatin-states-workflow.md](references/chromatin-states-workflow.md).
 
 ---
 
 ## Environment
 
-### Python
-
-- Python 3.10 or newer
-
-### External tools
-
-- bedtools
-- bash
-- Standard Unix command-line utilities
-
-### Conda environment
-
-A default environment specification is bundled:
-
-```text
-environment/epi_anno_env.yml
-```
-
-Create the environment:
+### Persistent Conda cache (preferred)
 
 ```bash
-conda env create -f environment/epi_anno_env.yml
-conda activate epi_anno_env
+bash scripts/ensure_env.sh
 ```
 
-Or allow the wrapper to create it automatically:
+| Item | Location |
+|------|----------|
+| Env prefix | `~/.cache/cursor-skills/genomic-regions-annotation/conda-env/` |
+| Spec | `environment/epi_anno_env.yml` |
+| Force rebuild | `bash scripts/ensure_env.sh --force-rebuild` |
 
-```bash
-python run_genomic_regions_annotation.py \
-  --input-dir peaks \
-  --genome hg38 \
-  --create-conda-env \
-  --run
-```
+Requires host `micromamba`, `mamba`, or `conda`. Includes `bedtools`, `pybedtools`, `natsort`, `ucsc-liftover`, plotly/kaleido, etc.
+
+Legacy wrapper flags (`--create-conda-env`, `--conda-prefix`) still work for the gene/feature pipeline.
+
+### Chromatin model cache (skill-local, gitignored)
+
+Prepared dense BEDs live under `cache/{collection}_{genome}_dense.bed` (not committed). Only final model files are kept.
 
 ---
 
 ## Install in Cursor / Agent Clients
 
 - Copy or symlink this skill directory into your agent skill path.
-- Ensure `scripts/`, `annotations/`, and `environment/` are preserved.
-- Invoke by name or ask the agent to run genomic region annotation as described in [SKILL.md](SKILL.md).
+- Preserve `scripts/`, `annotations/`, `environment/`, and `references/`.
+- `cache/` is created at runtime and gitignored.
 
 ---
 
-## Quick Start — BED Files
-
-```bash
-python run_genomic_regions_annotation.py \
-  --input-dir peaks \
-  --genome hg38 \
-  --run
-```
-
-The wrapper automatically detects:
+## Directory layout
 
 ```text
-*.bed    → bed6i0 by default for header-free BED files
-*.bed.gz → decompressed to .bed, then bed6i0 by default
-```
-
-Use `--bed-has-header` only when BED inputs contain one header line.
-
-and performs:
-
-```text
-BED
- ↓
-voom2anno.sh
- ↓
-annotateGenomicFeatures.py
- ↓
-OrganizeAnnotationResults.py
-```
-
----
-
-## Quick Start — Differential Peak Files
-
-```bash
-python run_genomic_regions_annotation.py \
-  --input-dir differential_results \
-  --genome hg19 \
-  --run
-```
-
-The wrapper automatically detects:
-
-```text
-*.vout → pktesth1
-```
-
----
-
-## Dry Run
-
-Validate all inputs, scripts, annotations, helper utilities, and conda configuration without executing:
-
-```bash
-python run_genomic_regions_annotation.py \
-  --input-dir peaks \
-  --genome hg38 \
-  --dry-run
-```
-
----
-
-## Run Layout and Metadata
-
-Results are written into a run-specific directory. The wrapper appends a UTC
-timestamp suffix to the final component of `--out-dir` using
-`YYYYMMDDTHHMMSSZ` format:
-
-```text
-<out-dir>-YYYYMMDDTHHMMSSZ/
-├── finalReports/
-├── allOtherFiles/
-├── bedFileAnnotations/
-└── GenomicFeaturesAnnotation/
-```
-
-Generated outputs include:
-
-- Annotated region tables
-- Excel workbooks
-- BED exports
-- GMT files
-- RNK files
-- MA plots
-- Volcano plots
-- PCA plots
-- Heatmaps
-- Genomic feature summaries
-
----
-
-## Directory Layout
-
-```text
-project/
+genomic-regions-annotation/
+├── SKILL.md
+├── README.md
 ├── run_genomic_regions_annotation.py
-│
 ├── scripts/
 │   ├── voom2anno.sh
 │   ├── annotateGenomicFeatures.py
 │   ├── OrganizeAnnotationResults.py
-│   ├── wcn.sh
-│   ├── tabit.sh
-│   ├── tabnNA.sh
-│   ├── region2bed.sh
-│   ├── bed2region.sh
-│   ├── winandgroup.sh
-│   └── gene2nomicro.awk
-│
-├── annotations/
-│   ├── gencode.v31.hg38.gtf.bed.sorted.tss
-│   ├── gencode.v19.hg19.bed.tss
-│   ├── gencode.vM22.mm10.gtf.bed.tss
-│   ├── gencode.vM17.mm9.gtf.bed.tss
-│   ├── sacCer3.shiftedBy125.flank375.bed.tss
-│   ├── hg38/
-│   ├── hg19/
-│   ├── mm10/
-│   ├── mm9/
-│   └── sacCer3/
-│
+│   ├── prepare_chromatin_model.py
+│   ├── BEDinContext.py
+│   ├── plot_chromatin_state_heatmap.py
+│   ├── ensure_env.sh
+│   ├── skill_env.py
+│   └── ...
+├── annotations/          # TSS + feature BEDs
 ├── references/
-│   ├── citations.md
-│   ├── input-formats-and-genomes.md
-│   └── workflow-and-outputs.md
-│
-└── environment/
-    └── epi_anno_env.yml
+│   ├── methods-*.md
+│   ├── chromatin-states-workflow.md
+│   └── chromatin-states/ # metadata, state2name, chain
+├── example_input/
+│   └── chromatin/        # CTCF_K562_ENCFF396BZQ.bed, POLR2A_K562_ENCFF285MBX.bed, exampleInput.lst
+├── cache/                # gitignored prepared models
+├── tests/fixtures/
+└── environment/epi_anno_env.yml
 ```
 
 ---
 
-## Supported Genomes
+## Quick Start — Genes + genomic features
 
-| Genome | Annotation File |
-|----------|----------|
+```bash
+bash scripts/ensure_env.sh
+python run_genomic_regions_annotation.py \
+  --input-dir peaks \
+  --genome hg38 \
+  --run
+```
+
+Flow: BED/VOUT → `voom2anno.sh` → `annotateGenomicFeatures.py` → `OrganizeAnnotationResults.py`.
+
+BED inputs are header-free by default. Genome is **required** (never defaulted).
+
+---
+
+## Quick Start — Chromatin states
+
+```bash
+bash scripts/ensure_env.sh
+# 1) prepare (downloads once into cache/)
+python scripts/prepare_chromatin_model.py --collection E123 --genome hg38
+# 2) annotate (pass the printed/cached dense BED path)
+python scripts/BEDinContext.py \
+  -r example_input/chromatin/exampleInput.lst \
+  -s cache/E123_hg38_dense.bed \
+  -o BEDinContext \
+  --state2name references/chromatin-states/state2name.tsv \
+  --outputDir /path/to/agentResults/genomic-regions-annotation-<runId> \
+  --runId <runId>
+```
+
+Default aggregation is **regions** (peak counts). Those primary tables and plots
+live directly under the `-o` directory (for example `BEDinContext/`).
+
+Optional `-a bp` or `-a both` also writes a secondary **base-pair** summary under:
+
+```text
+<out>/aggregationByBp/
+├── statsCombined.num.tsv
+├── statsCombined.frc.tsv
+├── statsCombined.list.tsv
+├── statsCombined.stackedBar.[png|pdf|html]
+└── <peakPrefix>.[barPlot|piePlot].[png|pdf]
+```
+
+Treat `aggregationByBp/` as supplementary; do not present it as the primary
+peak-distribution result. Per-peak best-state assignments (`*.bed2states.bed`)
+always stay at the top level of `-o`.
+Custom models: pass your dense BED and state2name; skip `prepare_chromatin_model.py`.
+
+Segway + hg38: `--collection ENCFF089AXD --genome hg38` (liftOver inside prepare).
+
+---
+
+## Supported genomes (gene / feature)
+
+| Genome | TSS annotation |
+|--------|----------------|
 | hg38 | gencode.v31.hg38.gtf.bed.sorted.tss |
 | hg19 | gencode.v19.hg19.bed.tss |
 | mm10 | gencode.vM22.mm10.gtf.bed.tss |
 | mm9 | gencode.vM17.mm9.gtf.bed.tss |
 | sacCer3 | sacCer3.shiftedBy125.flank375.bed.tss |
 
-Every annotation or dry-run must include `--genome`. The wrapper and lower-level annotation script do not default to `hg38`; ask the user for the genome build when it is missing.
-
----
-
-## Helper Script Validation
-
-The wrapper validates:
-
-```text
-wcn.sh
-tabit.sh
-tabnNA.sh
-region2bed.sh
-bed2region.sh
-winandgroup.sh
-gene2nomicro.awk
-```
-
-and automatically prepends:
-
-```text
-scripts/
-```
-
-to PATH during execution.
-
----
-
-## Common Examples
-
-### Custom output directory
-
-```bash
-python run_genomic_regions_annotation.py \
-  --input-dir peaks \
-  --genome hg38 \
-  --out-dir results \
-  --run
-```
-
-This writes to a directory such as `results-20260605T153012Z`.
-
-### Use existing conda environment
-
-```bash
-python run_genomic_regions_annotation.py \
-  --input-dir peaks \
-  --genome hg38 \
-  --conda-prefix /path/to/env \
-  --run
-```
-
-### Use custom annotation directory
-
-```bash
-python run_genomic_regions_annotation.py \
-  --input-dir peaks \
-  --genome hg38 \
-  --feature-anno-dir /path/to/annotations \
-  --run
-```
+Precalculated chromatin models are human hg19/hg38 only. Custom chromatin models are used as-is.
 
 ---
 
 ## Testing
 
 ```bash
-python run_genomic_regions_annotation.py \
-  --input-dir peaks \
-  --genome hg38 \
-  --dry-run
+# Help smoke
+python scripts/prepare_chromatin_model.py --help
+python scripts/BEDinContext.py --help
+python scripts/plot_chromatin_state_heatmap.py --help
+
+# Offline fixture tests
+GENOMIC_REGIONS_ANNOTATION_SKIP_ENV_BOOTSTRAP=1 python -m pytest tests -q
+
+# Gene/feature dry-run
+python run_genomic_regions_annotation.py --input-dir peaks --genome hg38 --dry-run
 ```
-
-Verify helper scripts:
-
-```bash
-which wcn.sh
-which tabit.sh
-```
-
----
-
-## Example Results
-
-### Feature Assignment Versions
-#### Gencode 2kb
-<div style="border:1px solid #ddd; border-radius:4px;">
-  <div style="background:#f5f5f5; padding:12px 16px; border-bottom:1px solid #ddd;">
-    <strong>Current versions</strong>
-  </div>
-  <div style="padding:16px;">
-    <pre>
-hg38v31
-mm10vM22
-hg19v31lift37
-mm9vM17lift
-    </pre>
-  </div>
-</div>
-
-<p>
-<p align="center">
-  <img src="assets/geneStructure.peak_annotation.peak2context.png" alt="peak2context" width="1000" />
-</p>
-</p>
-
-#### Results for ENCFF266EQD T-cell based on hg38 genome-wide distribution
-<p align="center">
-  <img src="assets/input.bed.anno.BED_format.piePlot.png" alt="pieplot" width="1000" />
-</p>
-
-### Gene Assignment Versions
-#### Gencode Promoter 2kb/Enhancer 2kb-50kb
-<div style="border:1px solid #ddd; border-radius:4px;">
-  <div style="background:#f5f5f5; padding:12px 16px; border-bottom:1px solid #ddd;">
-    <strong>Current versions</strong>
-  </div>
-  <div style="padding:16px;">
-    <pre>
-hg38v31
-mm10vM22
-hg19v31lift37
-mm9vM17lift
-    </pre>
-  </div>
-</div>
-
-<p>
-<p align="center">
-  <img src="assets/geneStructure.peak_annotation.peak2gene.png" alt="peak2gene" width="1000" />
-</p>
-</p>
-
-#### Annotation Results for ENCFF266EQD T-cell based on hg38
-
-<p align="center">
-  <img src="assets/input.bed.anno.BED_format.barPlot.png" alt="barplot" width="500" />
-  <img src="assets/AllFilesAcrossSources.GenomicFeaturesAnnotation.seaborn.png" alt="seaborn" width="500" />
-</p>
-
 
 ---
 
 ## Citation
 
-See [references/citations.md](references/citations.md) for the full three-layer attribution policy, citation keys, and methods text.
+See [references/citations.md](references/citations.md).
 
 | Layer | Credit |
 |-------|--------|
-| Skill package | CAB-aiSkills `genomic-regions-annotation` skill; skill author(s) in [../AUTHORS.md](../AUTHORS.md) |
-| Workflow orchestration | `run_genomic_regions_annotation.py` |
-| Gene annotation | `voom2anno.sh`; author per file header |
-| Feature annotation | `annotateGenomicFeatures.py`; author per file header |
-| Reporting | `OrganizeAnnotationResults.py`; author per file header |
-| External methods/resources | Report genome build, annotation resources, and BEDTools / ENCODE / GENCODE / GSEA where applicable |
+| Skill package | CAB-aiSkills `genomic-regions-annotation` |
+| Gene / feature scripts | Per file headers (`voom2anno`, annotateGenomicFeatures, OrganizeAnnotationResults) |
+| Chromatin | `BEDinContext.py` / prepare helpers; Roadmap ChromHMM; ENCODE Segway; BEDTools; UCSC liftOver |
 
 ---
 
 ## User-facing prompt examples
 
-Example prompts a user might type and how the agent should interpret them.
-
 | User prompt | Interpretation |
 |---|---|
-| "Run genomic region annotation on `peaks/` for hg38 BED files." | Use `--input-dir peaks --genome hg38`; dry-run first unless the user asks to execute immediately. |
-| "Annotate my header-free BED files in `peaks/` using hg38." | Use default BED handling; do not add `--bed-has-header`. |
-| "Annotate gzipped BED files in `peaks/` for mm10." | Use default `--bed-glob '*.bed,*.bed.gz'`; `.bed.gz` files are decompressed into the output directory before annotation. |
-| "Annotate differential ATAC results in `differential_results/` with hg19." | Use `.vout` auto-detection with `--genome hg19`. |
-| "Use `/path/to/env` and annotate `peaks/` for mm10." | Add `--conda-prefix /path/to/env --input-dir peaks --genome mm10`. |
-| "Check whether the pipeline is ready for my peak files." | Ask for the genome if missing; then run a dry-run with explicit `--genome`. |
-| "Run genomic region annotation on `peaks/`." | Do not run yet; ask which genome build to use. |
-| "Build a new deterministic production workflow for repeated paid API calls." | Out of scope for this skill; prefer a workflow with approvals and checkpoints. |
+| "Run genomic region annotation on `peaks/` for hg38 BED files." | Gene+feature wrapper; dry-run first unless asked to execute. |
+| "Annotate my header-free BED files in `peaks/` using hg38." | Default BED handling; no `--bed-has-header`. |
+| "Annotate gzipped BED files in `peaks/` for mm10." | Decompress `.bed.gz` then annotate. |
+| "Annotate differential ATAC results in `differential_results/` with hg19." | VOUT auto-detect; `--genome hg19`. |
+| "Only assign peaks to genomic features (skip gene lists)." | Feature path still goes through wrapper/anno pipeline; clarify if they want feature summaries only. |
+| "Annotate these peaks to genes only for hg38." | Gene+feature wrapper is the supported path; reports include both unless customized. |
+| "What ChromHMM / Segway models are available for K562?" | Lookup `availableModelsLookup.tsv` → E123 / ENCFF089AXD; do not annotate until confirmed. |
+| "What is the closest chromatin model to CD35+ / follicular dendritic cells?" | Biological matching via lookup + metadata; suggest E032/E031 (primary B cells) with rationale; wait for confirmation. |
+| "Annotate `peaks/*.bed` to Roadmap E123 on hg38." | `prepare_chromatin_model.py --collection E123 --genome hg38` then `BEDinContext.py`; copy models into run dir; **no** OrganizeAnnotationResults. |
+| "Annotate CTCF and POLR2A K562 peaks to Segway for hg38." | Use example BEDs or user paths; prepare ENCFF089AXD (or confirmed Segway ID) with `--genome hg38`. |
+| "Use my custom ChromHMM dense BED and state2name.tsv." | Skip prepare; pass paths to `BEDinContext.py --state2name`; document genome as as-is. |
+| "List available Roadmap collections that look like primary B cells." | Filter Roadmap metadata / lookup; present E031/E032 names. |
+| "Make a heatmap from the chromatin fraction matrix." | `plot_chromatin_state_heatmap.py` on `statsCombined.frc.tsv`. |
+| "Run genomic region annotation on `peaks/`." | Ask for genome first. |
+| "Build a new deterministic production workflow for repeated paid API calls." | Out of scope. |
 
 ---
 
 ## License
 
-This skill package is licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (`CC-BY-NC-SA-4.0`). Follow the licenses and notices included with bundled upstream scripts and annotation resources.
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (`CC-BY-NC-SA-4.0`). Follow notices for bundled scripts and annotation resources.

@@ -1,7 +1,7 @@
 interface:
   display_name: "Genomic regions annotation"
-  short_description: "Run St. Jude/CAB-style genomic region annotation for .bed and .vout inputs with an explicit genome build."
-  default_prompt: "Use $genomic-regions-annotation to run the annotation with an explicitly stated genome, ask for the genome if missing, and summarize the output."
+  short_description: "Annotate genomic regions to genes, features, and chromatin states (ChromHMM/Segway) with an explicit genome build."
+  default_prompt: "Use $genomic-regions-annotation with an explicitly stated genome (ask if missing). For chromatin demos, prefer example_input/chromatin/CTCF and POLR2A BEDs, and do not run OrganizeAnnotationResults after chromatin annotation."
 
 policy:
   allow_implicit_invocation: true

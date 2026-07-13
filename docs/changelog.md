@@ -2,6 +2,16 @@
 
 Newest entries first.
 
+## 2026-07-13
+
+- Extended **`genomic-regions-annotation`** with a chromatin-state annotation branch (ChromHMM Roadmap, Segway/ENCODE, custom dense BED).
+- Added `prepare_chromatin_model.py` (download/preprocess/cache), adapted `BEDinContext.py` (path-resolved models + run metadata), and optional `plot_chromatin_state_heatmap.py`.
+- Bundled chromatin metadata, state2name maps, hg19→hg38 chain, model lookup table, and CTCF/POLR2A example inputs; skill-local `cache/` is gitignored.
+- Added methods docs for gene, genomic-feature, and chromatin-state annotation; chromatin agent workflow reference; persistent `ensure_env.sh` helpers; env pins for `natsort` and `ucsc-liftover`.
+- Chromatin runs must **not** invoke `OrganizeAnnotationResults.py`.
+- `BEDinContext.py` keeps region-level summaries as primary top-level outputs; optional bp aggregation (`-a bp` / `-a both`) writes under `<out>/aggregationByBp/`.
+- Migration: pass resolved dense BED paths to `BEDinContext.py` (collection codes are prepared via `prepare_chromatin_model.py`, not absolute CombinedChromatinStatesMetadata paths).
+
 ## 2026-07-08
 
 - Added **`genomic-set-analysis`** skill: portable, HPC-independent successor to the in-house `IntervenePeaksCombine.py` wrapper for order-independent overlap of genomic region sets or gene sets with **Intervene** (Venn / UpSet / pairwise), a membership matrix, and mutually exclusive per-sector files (`intervene_peaks_combine.py`).
