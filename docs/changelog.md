@@ -2,6 +2,11 @@
 
 Newest entries first.
 
+## 2026-07-14
+
+- **`genomic-set-analysis`**: Synced pairwise significance with in-house `IntervenePeaksCombine`: **fold enrichment** (\(a/(|A||B|/N)\)), **expected overlap**, **enrichment direction**, raw-FE clustermap (not log2), and **`--pairwiseSignificanceUniverse`** (`auto`/`-1` or a positive integer). Updated evaluation prompts for manual universe size. Docs and tests updated.
+- **`genomic-set-analysis`**: Added pairwise Fisher exact overlap significance (default on), ported from the in-house `IntervenePeaksCombine` upgrade. New module `scripts/pairwise_significance.py`; flags `--pairwiseSignificance` / `--pairwiseSignificanceFigSize`. BED mode uses `*.fromMerged.bed` + merged-peak universe; GMT mode uses Python sets + gene-union universe. Writes `pairwiseSignificance/` TSV matrices and one clustermap per statistic (Jaccard diagonal masked). Docs and tests updated.
+
 ## 2026-07-13 (cleanup)
 
 - Removed accidental macOS AppleDouble `._*` sidecars and a committed matplotlib cache under `genomic-regions-annotation/tmp/`.

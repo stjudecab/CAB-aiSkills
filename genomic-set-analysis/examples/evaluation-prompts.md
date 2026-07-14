@@ -85,3 +85,25 @@ manifest TSV, run the overlap, and point the user to `setLabelsManifest.tsv` sho
 
 **Expected:** Skip the default top-10 / ≥5-gene filter (or set `--minGenes 1 --topN 0`), tell the
 user you are overriding the default policy, and record that override in the summary.
+
+## 11. Pairwise significance with manual universe size
+
+**Prompt:** "Overlap the example BEDs and test whether pairwise overlaps are significant. Use
+a background population of 50000 regions for the Fisher / fold-enrichment calculations."
+
+**Expected:** Run `intervene_peaks_combine.py` with `--pairwiseSignificance True` (default) and
+**`--pairwiseSignificanceUniverse 50000`**. Confirm `pairwiseSignificance/` contains fold
+enrichment / direction / Fisher matrices and that `pairwise.summary.long.tsv` records
+`universe_N=50000` with `universe_source=manual`. Report over- vs underrepresented pairs from
+`enrichment_direction`. Do not invent a genome-wide N if the user did not give one — default is
+`auto` (analysis union).
+
+## 12. Pairwise significance — default auto universe
+
+**Prompt:** "Are any of these gene sets significantly overlapping each other?"
+
+**Expected:** Run GMT/BED overlap with pairwise significance left at default
+(`--pairwiseSignificanceUniverse auto`). Explain that N is the analysis union (merged peaks or
+unique genes across inputs), point to `pairwiseSignificance/`, and summarize significant
+pairs (FDR) plus fold enrichment / direction. Mention the user can pass a known background size
+via `--pairwiseSignificanceUniverse <integer>` if they have one.

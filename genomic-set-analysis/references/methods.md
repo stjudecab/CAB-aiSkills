@@ -7,6 +7,7 @@
 - Region (BED) mode
 - Gene-set (GMT) mode
 - Manifest (TSV) mode
+- Pairwise Fisher overlap significance
 - Bundled scripts
 - Expression module details
 - Numerical policy
@@ -14,9 +15,10 @@
 ## Scientific intent
 
 Given two or more peak/region sets or gene sets, define **combinatorial sets** (A-only, A∩B,
-A∩B∩C, …), visualize the overlap structure (Venn / UpSet / pairwise), and enable downstream
-questions such as *which genes and pathways are active near regions shared by factor X and Y
-but not Z?*
+A∩B∩C, …), visualize the overlap structure (Venn / UpSet / pairwise), test whether each
+**pairwise** overlap is surprising under a discrete universe (Fisher exact), and enable
+downstream questions such as *which genes and pathways are active near regions shared by
+factor X and Y but not Z?*
 
 ## Order-independence and its caveat
 
@@ -37,18 +39,21 @@ Triggered when `-i` lists ≥2 region files (or a TSV manifest resolves to them)
 1. Merge all inputs into `<prefix>.mergedPeaks_all.bed` (union).
 2. For each input, intersect the union with that input (`wa=True, u=True`) → `<prefix>.<label>.fromMerged.bed`,
    and set the membership flag in `<prefix>.mergedPeaks_matrix.tsv` (1 = present, 0 = absent).
-3. Run Intervene `venn` (≤6 inputs), `upset`, and/or `pairwise` on the `*.fromMerged.bed` files
+3. Optionally (default on) run pairwise Fisher significance on the `*.fromMerged.bed` files →
+   `pairwiseSignificance/` (see below).
+4. Run Intervene `venn` (≤6 inputs), `upset`, and/or `pairwise` on the `*.fromMerged.bed` files
    with `--type genomic --save-overlaps`.
-4. Copy Intervene's per-sector `sets/` into `setsCounted/` with a zero-padded region-count prefix
+5. Copy Intervene's per-sector `sets/` into `setsCounted/` with a zero-padded region-count prefix
    (`000000123__<name>.bed`) so the largest sectors sort first and selection is deterministic.
-5. Stage the original inputs into `originalInputs/` (copies, never modifying the source) so the
+6. Stage the original inputs into `originalInputs/` (copies, never modifying the source) so the
    annotation and pathway add-ons can operate on the originals as well as the sectors.
 
 ## Gene-set (GMT) mode
 
 Triggered when `-i` is a single `*.gmt`. Each row is `setName <tab> description <tab> gene1 gene2 …`.
-The script builds the union of genes, writes a membership matrix, runs Intervene with `--type list`,
-copies `sets/` to `setsCounted/`, and writes two convenience files for pathway enrichment:
+The script builds the union of genes, writes a membership matrix, optionally runs pairwise Fisher
+significance (default on), runs Intervene with `--type list`, copies `sets/` to `setsCounted/`, and
+writes two convenience files for pathway enrichment:
 
 - `intersections.gmt` — one entry per combinatorial sector (from Intervene `sets/`).
 - `originalSets.gmt` — the original input gene sets.
@@ -67,17 +72,65 @@ passing them via `-n` or the manifest. The script writes `setLabelsManifest.tsv`
 `original_label` and `analysis_label` for every run. GMT mode accepts `-n` to remap long GMT set
 names to short analysis labels while preserving originals in the manifest.
 
+## Pairwise Fisher overlap significance
+
+Controlled by `--pairwiseSignificance` (default **`True`**), `--pairwiseSignificanceFigSize`
+(default `10,8`), and `--pairwiseSignificanceUniverse` (default **`auto`**, also `-1`).
+
+This is **independent** of Intervene `--toPlot pairwise` (descriptive overlap **fractions** only).
+
+### Algorithm
+
+1. Universe size \(N\):
+   - `auto` / `-1`: BED = `|mergedPeaks_all|`; GMT = unique genes across input sets.
+   - Positive integer: user-supplied background (e.g. all protein-coding genes).
+2. For each unordered pair \((A, B)\):
+   - BED: count \(a = |A \cap B|\) with `pybedtools` `intersect(wa=True, u=True)` on **`fromMerged`** BEDs.
+   - GMT: \(a\) via Python `set` intersection.
+   - Contingency: \(b=\|A\|-a\), \(c=\|B\|-a\), \(d=N-\|A\|-\|B\|+a\).
+   - `scipy.stats.fisher_exact([[a,b],[c,d]], alternative="two-sided")` → odds ratio and p-value.
+   - Expected \(E=\|A\|\|B\|/N\); fold enrichment \(\mathrm{FE}=a/E\); direction from FE
+     (`overrepresented` / `underrepresented` / `equal`).
+   - Jaccard \(= a / \|A \cup B\|\).
+3. Benjamini–Hochberg FDR over unique unordered pairs \(n(n-1)/2\); fill a symmetric matrix.
+4. Write TSVs and one clustermap per statistic under `pairwiseSignificance/`.
+
+### Clustermap transforms
+
+| Plot file | Values shown |
+|-----------|--------------|
+| `pairwise.overlap_count.clustermap.*` | Raw overlap counts |
+| `pairwise.jaccard.clustermap.*` | Jaccard; **diagonal masked** |
+| `pairwise.log2_odds_ratio.clustermap.*` | \(\log_2(\mathrm{OR})\); OR clipped; diagonal = 0; RdBu_r centered at 0 |
+| `pairwise.fold_enrichment.clustermap.*` | **Raw** fold enrichment \(a/E\) (not log2); diagonal masked |
+| `pairwise.fisher_pvalue.clustermap.*` | \(-\log_{10}(p)\); diagonal = 0 |
+| `pairwise.fisher_fdr.clustermap.*` | \(-\log_{10}(\mathrm{FDR})\); diagonal = 0 |
+
+Interpretation: FE > 1 / positive \(\log_2(\mathrm{OR})\) = enrichment; FE < 1 / negative
+\(\log_2(\mathrm{OR})\) = depletion. Large \(-\log_{10}(\mathrm{FDR})\) = more surprising after BH.
+
+### Limitations
+
+- Default universe is the analysis-specific merged-peak or gene union, not the full genome /
+  curated gene background, unless the user sets `--pairwiseSignificanceUniverse`.
+- BED tests count **merged intervals**, matching Intervene’s `fromMerged` view.
+- Pairwise set-vs-set only (not combinatorial Upset-sector enrichment).
+
 ## Bundled scripts
 
 ### `intervene_peaks_combine.py`
 
 - **Args:** `-i/--inputPeaks` (required), `-n/--names`, `-o/--outputPrefix`, `--outputDir`,
-  `--figSize`, `--toPlot`, `--mbColor`, `--sbColor`, `--overwrite`, `--dryRun`.
-- **Outputs:** membership matrix, merged/`fromMerged` BEDs, Intervene plots, `sets/`, `setsCounted/`,
+  `--figSize`, `--toPlot`, `--mbColor`, `--sbColor`, `--pairwiseSignificance`,
+  `--pairwiseSignificanceFigSize`, `--pairwiseSignificanceUniverse`, `--overwrite`, `--dryRun`.
+- **Outputs:** membership matrix, merged/`fromMerged` BEDs, Intervene plots, `pairwiseSignificance/`,
+  `sets/`, `setsCounted/`,
   `originalInputs/` (BED mode) or `intersections.gmt`/`originalSets.gmt` (GMT mode), `logs/commands.log`,
   and `run_metadata.json` (UTC run ID, command, inputs, params, tool versions).
 - **Dependencies:** Intervene CLI + BEDTools for plotting; `pybedtools` for BED merge/intersect;
-  `pandas`, `numpy`. GMT mode with `--toPlot ignore` needs neither Intervene nor pybedtools.
+  `pandas`, `numpy`, `scipy`, `seaborn`, `matplotlib` (significance clustermaps). GMT mode with
+  `--toPlot ignore` needs neither Intervene nor pybedtools for the matrix step; significance still
+  needs scipy (and seaborn for plots).
 - **Safety:** fails fast on missing inputs, single-BED input, mismatched labels, malformed figure
   size, non-zero Intervene exit, or an existing output directory without `--overwrite`.
 

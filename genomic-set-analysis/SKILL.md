@@ -3,7 +3,8 @@ name: genomic-set-analysis
 description: >-
   Order-independent overlap and combinatorial analysis of genomic region sets (ChIP-seq,
   ATAC-seq, CUT&Tag, CUT&RUN, narrowPeak/broadPeak/BED) or gene sets (GMT) using Intervene
-  (Venn / UpSet / pairwise). Builds a union of elements, a membership matrix, and mutually
+  (Venn / UpSet / pairwise) plus optional pairwise Fisher exact overlap significance
+  (default on). Builds a union of elements, a membership matrix, and mutually
   exclusive per-sector files, then optionally chains the genomic-regions-annotation skill
   for nearby-gene annotation and the pathway-enrichment-enrichr skill for Enrichr pathway
   enrichment of both the intersection sectors and the original inputs, plus gated expression
@@ -15,7 +16,8 @@ description: >-
 license: CC-BY-NC-SA-4.0
 compatibility: >-
   Requires Python 3.8-3.9 (Intervene 0.6.4 imports collections.Iterable, removed in 3.10+) with
-  the Intervene CLI (bioconda::intervene), bedtools, pybedtools, pandas, numpy. On first run,
+  the Intervene CLI (bioconda::intervene), bedtools, pybedtools, pandas, numpy, scipy, seaborn,
+  matplotlib. On first run,
   `scripts/ensure_env.sh` creates a persistent Conda/micromamba prefix at
   `~/.cache/ai-skills-env/genomic-set-analysis/conda-env/` from `environment.yml` and reuses it
   on later runs (not recreated each time). Expression summaries additionally need scipy, seaborn,
@@ -24,9 +26,9 @@ compatibility: >-
   for Enrichr.
 metadata:
   author: Wojciech Rosikiewicz <rosikiewicz@gmail.com>
-  version: "0.1.0"
+  version: "0.2.0"
   status: draft
-  last_reviewed: "2026-07-08"
+  last_reviewed: "2026-07-14"
 allowed-tools: shell python
 ---
 
@@ -38,9 +40,10 @@ Overlap two or more genomic region sets (or gene sets) in an **order-independent
 characterize what is shared. The bundled `intervene_peaks_combine.py` script wraps the
 [Intervene](https://github.com/asntech/intervene) tool: it merges all inputs into one
 union, marks per-input membership, splits the union into mutually exclusive combinatorial
-sectors (A-only, A∩B, A∩B∩C, …), and draws Venn / UpSet / pairwise plots. The agent then
-optionally chains two sibling skills for nearby-gene **annotation** and **pathway
-enrichment**, and can produce gated **expression summaries**.
+sectors (A-only, A∩B, A∩B∩C, …), and draws Venn / UpSet / pairwise plots. By default it also
+runs **pairwise Fisher exact overlap significance** (TSV matrices + clustermaps under
+`pairwiseSignificance/`). The agent then optionally chains two sibling skills for nearby-gene
+**annotation** and **pathway enrichment**, and can produce gated **expression summaries**.
 
 This skill is the portable, HPC-independent successor to the in-house `IntervenePeaksCombine.py`
 wrapper. All scheduling (LSF/`bsub`) has been removed; every step runs locally or via a sibling skill.
@@ -76,6 +79,11 @@ wrapper. All scheduling (LSF/`bsub`) has been removed; every step runs locally o
   See [Short set labels](#short-set-labels-important).
 - **`-o/--outputPrefix`**, **`--outputDir`** (point at `agentResults/` for skill runs).
 - **`--toPlot`** (`venn,upset`, add `pairwise`, or `ignore`), **`--figSize`**, **`--mbColor`**, **`--sbColor`**.
+- **`--pairwiseSignificance`** (default `True`): Fisher pairwise overlap significance TSVs +
+  clustermaps; opt out with `False`. **`--pairwiseSignificanceFigSize`** (default `10,8`).
+  **`--pairwiseSignificanceUniverse`** (default `auto`, also `-1`): population size \(N\) for
+  Fisher / expected overlap / fold enrichment. Pass a positive integer when the user knows the
+  true background size (e.g. protein-coding genes); otherwise leave `auto` (analysis union).
 - Expression: an **expression matrix** (`--exprMatrixFile`) **and** a condition mapping
   (`--exprSampleCondition` or `--metadataFile`). Both are required to plot expression.
 
@@ -145,6 +153,7 @@ Expression summaries (`expression_summary.py`) follow the same contract under th
 | Module | Status in this skill | How it runs |
 |--------|----------------------|-------------|
 | Overlap + Venn/UpSet/pairwise + matrix + sectors | Available | `intervene_peaks_combine.py` (local) |
+| Pairwise Fisher overlap significance | Available (default on) | `pairwise_significance.py` via `--pairwiseSignificance` |
 | Nearby-gene annotation | Available | Chain the **`genomic-regions-annotation`** skill |
 | Pathway enrichment (intersections + originals) | Available | Chain **`pathway-enrichment-enrichr`** after filtering (default: top 10 intersections with ≥5 genes; originals with ≥5 genes). |
 | Expression summaries | Available, **gated** | `expression_summary.py` (needs matrix + conditions) |
@@ -217,10 +226,13 @@ python scripts/intervene_peaks_combine.py \
 ```
 
 This creates `agentResults/factorOverlap.intervene/` with the membership matrix, merged BED,
-`*.fromMerged.bed`, Intervene plots, `sets/`, `setsCounted/`, staged `originalInputs/`,
-`setLabelsManifest.tsv`, and `run_metadata.json`. In GMT mode it also writes `intersections.gmt`
-and `originalSets.gmt`.
-See [references/inputs-and-outputs.md](references/inputs-and-outputs.md).
+`*.fromMerged.bed`, Intervene plots, **`pairwiseSignificance/`** (Fisher matrices + clustermaps;
+default on), `sets/`, `setsCounted/`, staged `originalInputs/`, `setLabelsManifest.tsv`, and
+`run_metadata.json`. In GMT mode it also writes `intersections.gmt` and `originalSets.gmt`.
+Disable significance with `--pairwiseSignificance False`. To use a known background size for
+Fisher and fold enrichment, pass `--pairwiseSignificanceUniverse <integer>` (default `auto` =
+analysis union). See [references/inputs-and-outputs.md](references/inputs-and-outputs.md) and
+[references/methods.md](references/methods.md).
 
 ### Step 2 — Annotation (only if requested; needs genome build)
 
@@ -325,7 +337,8 @@ step (Intervene/BEDTools, annotation/GENCODE build, Enrichr libraries). Point th
 | [scripts/ensure_env.sh](scripts/ensure_env.sh) | Create/reuse persistent Conda env under `~/.cache/ai-skills-env/genomic-set-analysis/` |
 | [scripts/skill_env.py](scripts/skill_env.py) | Python bootstrap used by CLI entrypoints |
 | [scripts/run_with_skill_env.sh](scripts/run_with_skill_env.sh) | Shell wrapper to run any command in the skill env |
-| [scripts/intervene_peaks_combine.py](scripts/intervene_peaks_combine.py) | Core overlap: union, matrix, sectors, Intervene plots, staging, metadata. |
+| [scripts/intervene_peaks_combine.py](scripts/intervene_peaks_combine.py) | Core overlap: union, matrix, sectors, Intervene plots, pairwise significance, staging, metadata. |
+| [scripts/pairwise_significance.py](scripts/pairwise_significance.py) | Fisher exact pairwise overlap TSVs + clustermaps (called by the core script). |
 | [scripts/filter_gmt_for_pathway.py](scripts/filter_gmt_for_pathway.py) | Filter GMTs before pathway enrichment (default ≥5 genes; top 10 intersections). |
 | [scripts/expression_summary.py](scripts/expression_summary.py) | Gated boxplots/heatmaps for genes per sector from a GMT + matrix + conditions. |
 

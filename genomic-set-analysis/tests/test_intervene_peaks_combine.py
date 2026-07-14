@@ -123,6 +123,16 @@ def test_gene_set_mode_end_to_end(tmp_path):
     assert metadata["logs"]["commands.log"]
     assert metadata["tool_versions"]["python"].startswith("3")
     assert "intervene" in metadata["citation_keys"]
+    assert metadata["parameters"]["pairwiseSignificance"] is True
+    assert metadata["parameters"]["pairwiseSignificanceUniverse"] == "auto"
+    pwDir = outDir / "pairwiseSignificance"
+    assert (pwDir / "pairwise.summary.long.tsv").is_file()
+    assert (pwDir / "pairwise.fisher_fdr.tsv").is_file()
+    assert (pwDir / "pairwise.fold_enrichment.tsv").is_file()
+    assert (pwDir / "pairwise.enrichment_direction.tsv").is_file()
+    assert (pwDir / "pairwise.fold_enrichment.clustermap.pdf").is_file()
+    assert (pwDir / "pairwise.jaccard.clustermap.pdf").is_file()
+    assert (pwDir / "pairwise.log2_odds_ratio.clustermap.pdf").is_file()
 
 
 def test_build_sets_counted(tmp_path):

@@ -6,7 +6,8 @@
 
 Portable **Agent Skill** for **order-independent overlap and combinatorial analysis** of genomic
 region sets (ChIP-seq, ATAC-seq, CUT&Tag, CUT&RUN, narrowPeak/broadPeak/BED) or gene sets (GMT)
-using **[Intervene](https://github.com/asntech/intervene)** (Venn / UpSet / pairwise). It builds a
+using **[Intervene](https://github.com/asntech/intervene)** (Venn / UpSet / pairwise) and, by
+default, **pairwise Fisher exact overlap significance**. It builds a
 union of elements, a membership matrix, and mutually exclusive per-sector files, then optionally
 chains the **`genomic-regions-annotation`** skill for nearby-gene annotation and the
 **`pathway-enrichment-enrichr`** skill for Enrichr pathway enrichment of **both** the intersection
@@ -138,6 +139,7 @@ write filtered GMTs and filter-manifest TSVs before calling Enrichr.
 | Module | Status |
 |--------|--------|
 | Overlap + Venn/UpSet/pairwise + matrix + sectors | Available (local) |
+| Pairwise Fisher overlap significance | Available (default on; `--pairwiseSignificance`, optional `--pairwiseSignificanceUniverse`) |
 | Nearby-gene annotation | Available via `genomic-regions-annotation` |
 | Pathway enrichment (intersections + originals) | Available via `pathway-enrichment-enrichr`; default filter: top 10 intersections with ≥5 genes, originals with ≥5 genes |
 | Expression summaries | Available, gated on matrix + conditions |

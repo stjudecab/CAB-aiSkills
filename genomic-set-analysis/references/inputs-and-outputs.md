@@ -32,6 +32,17 @@ All artifacts live under `<outputDir>/<outputPrefix>.intervene/`:
 ├── <outputPrefix>.intervene_venn.pdf         # Intervene Venn (if enabled)
 ├── <outputPrefix>.intervene_upset.pdf        # Intervene UpSet (if enabled)
 ├── <outputPrefix>.intervene_pairwise_frac.*  # Intervene pairwise (if enabled)
+├── pairwiseSignificance/                     # Fisher pairwise tests (default on)
+│   ├── pairwise.overlap_count.tsv
+│   ├── pairwise.expected_overlap.tsv
+│   ├── pairwise.fold_enrichment.tsv
+│   ├── pairwise.enrichment_direction.tsv
+│   ├── pairwise.jaccard.tsv
+│   ├── pairwise.odds_ratio.tsv
+│   ├── pairwise.fisher_pvalue.tsv
+│   ├── pairwise.fisher_fdr.tsv
+│   ├── pairwise.summary.long.tsv
+│   └── pairwise.*.clustermap.{pdf,png}
 ├── sets/                                     # per-sector files from Intervene
 ├── setsCounted/                              # sets/ prefixed with zero-padded counts
 ├── originalInputs/                           # staged copies of the original BEDs (BED mode)
@@ -92,6 +103,14 @@ Intervene writes one file per combinatorial sector into `sets/`. `setsCounted/` 
 
 Agents should shorten long labels before the run (see `SKILL.md`) unless labels are already ≤15
 characters and unique, or the user supplied short names.
+
+## Pairwise significance outputs
+
+When `--pairwiseSignificance True` (default), see `pairwiseSignificance/` and
+[methods.md](methods.md#pairwise-fisher-overlap-significance). Default universe is `auto` (analysis
+union); override with `--pairwiseSignificanceUniverse <integer>`. TSVs keep raw odds ratios /
+p-values / fold enrichment; clustermaps use transforms where noted (\(-\log_{10}p\), \(\log_2\mathrm{OR}\);
+fold-enrichment clustermap is **raw FE**, not log2).
 
 ## Reproducibility record
 

@@ -15,6 +15,8 @@ Scientific intent:
     Overlap structure is plotted with Intervene (Venn / UpSet / pairwise). Operating on
     the union makes the result independent of input order, at the documented cost that
     the union can contain fewer regions than any single "A overlaps B" pairwise count.
+    By default, pairwise Fisher exact overlap significance is also computed (independent
+    of Intervene fraction pairwise plots).
 
 What this script deliberately does NOT do (handled by the agent per SKILL.md):
     - Peak annotation (delegated to the ``genomic-regions-annotation`` skill).
@@ -61,6 +63,28 @@ LOGGER = logging.getLogger("intervene_peaks_combine")
 
 GENOMIC_SUFFIXES = (".bed", ".narrowpeak", ".narrowPeak", ".broadPeak", ".broadpeak")
 DEFAULT_MAX_LABEL_LENGTH = 15
+
+
+def _str2bool(value: object) -> bool:
+    """Parse common truthy/falsey CLI strings into a bool.
+
+    Args:
+        value (object): Raw argparse value (bool or string).
+
+    Returns:
+        bool: Parsed boolean.
+
+    Raises:
+        argparse.ArgumentTypeError: When the value is not recognized.
+    """
+    if isinstance(value, bool):
+        return value
+    text = str(value).strip().lower()
+    if text in ("yes", "true", "t", "y", "1"):
+        return True
+    if text in ("no", "false", "f", "n", "0"):
+        return False
+    raise argparse.ArgumentTypeError(f"Unrecognized boolean value: {value!r}")
 
 
 def autoLabelFromPath(path: str) -> str:
@@ -278,6 +302,34 @@ def parseArguments() -> argparse.Namespace:
         help="[UpSet] Set-size bar plot color. Default '#727272'.",
     )
     parser.add_argument(
+        "--pairwiseSignificance",
+        dest="pairwiseSignificance",
+        type=_str2bool,
+        default=True,
+        help=(
+            "Run pairwise Fisher exact overlap significance (independent of Intervene "
+            "--toPlot pairwise fraction plots). BED mode uses pybedtools on *.fromMerged.bed; "
+            "GMT mode uses Python sets. Writes TSV matrices (including fold enrichment) and "
+            "one clustermap per statistic under pairwiseSignificance/. Default True."
+        ),
+    )
+    parser.add_argument(
+        "--pairwiseSignificanceFigSize",
+        dest="pairwiseSignificanceFigSize",
+        default="10,8",
+        help="Figure size 'width,height' for pairwise significance clustermaps. Default '10,8'.",
+    )
+    parser.add_argument(
+        "--pairwiseSignificanceUniverse",
+        dest="pairwiseSignificanceUniverse",
+        default="auto",
+        help=(
+            "Population size N for Fisher tests and expected overlap. Default 'auto' (also "
+            "'-1'): use the analysis union (BED = mergedPeaks_all count; GMT = unique genes). "
+            "Pass a positive integer for a known background (e.g. all protein-coding genes)."
+        ),
+    )
+    parser.add_argument(
         "--overwrite",
         dest="overwrite",
         action="store_true",
@@ -309,6 +361,18 @@ def parseArguments() -> argparse.Namespace:
             f"Invalid --figSize '{args.figSize}'. Expected 'width,height' with two integers."
         )
     args.figSizeParsed = (int(figParts[0]), int(figParts[1]))
+
+    pwFigParts = [p.strip() for p in str(args.pairwiseSignificanceFigSize).split(",")]
+    if len(pwFigParts) != 2 or not all(p.lstrip("-").isdigit() for p in pwFigParts):
+        raise ValueError(
+            f"Invalid --pairwiseSignificanceFigSize '{args.pairwiseSignificanceFigSize}'. "
+            "Expected 'width,height' with two integers."
+        )
+    args.pairwiseSignificanceFigSizeParsed = (int(pwFigParts[0]), int(pwFigParts[1]))
+
+    from pairwise_significance import parseUniverseSpec
+
+    args.pairwiseSignificanceUniverseSpec = parseUniverseSpec(args.pairwiseSignificanceUniverse)
 
     args.plotVenn = "venn" in args.toPlot and "ignore" not in args.toPlot
     args.plotUpset = "upset" in args.toPlot and "ignore" not in args.toPlot
@@ -563,6 +627,24 @@ def runGeneSetMode(args: argparse.Namespace, interveneDir: Path, commandsLog: Pa
             matrix.write(element + "\t" + "\t".join(flags) + "\n")
     LOGGER.info("Wrote membership matrix: %s", matrixPath)
 
+    if args.pairwiseSignificance and not args.dryRun:
+        from pairwise_significance import runPairwiseSignificance
+
+        runPairwiseSignificance(
+            names=args.names,
+            outDir=interveneDir / "pairwiseSignificance",
+            mode="gmt",
+            figsize=args.pairwiseSignificanceFigSizeParsed,
+            universeSize=len(unionElements),
+            universeSpec=args.pairwiseSignificanceUniverseSpec,
+            geneSets=args.gmtContent,
+        )
+    elif args.pairwiseSignificance and args.dryRun:
+        LOGGER.info(
+            "[dryRun] Would run pairwise significance under %s",
+            interveneDir / "pairwiseSignificance",
+        )
+
     figSize = f"{args.figSizeParsed[0]} {args.figSizeParsed[1]}"
     namesArg = ",".join(args.names)
     inputsArg = " ".join(elemFiles)
@@ -645,6 +727,24 @@ def runGenomicMode(args: argparse.Namespace, interveneDir: Path, commandsLog: Pa
         for key, flags in matrix.items():
             handle.write("\t".join(list(key) + [str(v) for v in flags]) + "\n")
     LOGGER.info("Wrote membership matrix: %s", matrixPath)
+
+    if args.pairwiseSignificance and not args.dryRun:
+        from pairwise_significance import runPairwiseSignificance
+
+        runPairwiseSignificance(
+            names=args.names,
+            outDir=interveneDir / "pairwiseSignificance",
+            mode="bed",
+            figsize=args.pairwiseSignificanceFigSizeParsed,
+            bedFiles=fromMergedFiles,
+            universeSize=len(merged),
+            universeSpec=args.pairwiseSignificanceUniverseSpec,
+        )
+    elif args.pairwiseSignificance and args.dryRun:
+        LOGGER.info(
+            "[dryRun] Would run pairwise significance under %s",
+            interveneDir / "pairwiseSignificance",
+        )
 
     figSize = f"{args.figSizeParsed[0]} {args.figSizeParsed[1]}"
     namesArg = ",".join(args.names)
@@ -742,6 +842,11 @@ def collectExistingOutputs(interveneDir: Path, prefix: str, gmtMode: bool) -> Li
         )
     for pattern in ("*.pdf", f"{prefix}.intervene_*.pdf"):
         candidates.extend(Path(p) for p in glob.glob(str(interveneDir / pattern)))
+    pwDir = interveneDir / "pairwiseSignificance"
+    if pwDir.is_dir():
+        candidates.extend(Path(p) for p in glob.glob(str(pwDir / "*.tsv")))
+        candidates.extend(Path(p) for p in glob.glob(str(pwDir / "*.pdf")))
+        candidates.extend(Path(p) for p in glob.glob(str(pwDir / "*.png")))
     return sorted({path.resolve().as_posix() for path in candidates if path.is_file()})
 
 
@@ -791,6 +896,10 @@ def writeRunMetadata(
             "toPlot": args.toPlot,
             "mbColor": args.mbColor,
             "sbColor": args.sbColor,
+            "pairwiseSignificance": args.pairwiseSignificance,
+            "pairwiseSignificanceFigSize": args.pairwiseSignificanceFigSizeParsed,
+            "pairwiseSignificanceUniverse": args.pairwiseSignificanceUniverse,
+            "pairwiseSignificanceUniverseResolved": args.pairwiseSignificanceUniverseSpec,
             "dryRun": args.dryRun,
         },
         "tool_versions": versions,
