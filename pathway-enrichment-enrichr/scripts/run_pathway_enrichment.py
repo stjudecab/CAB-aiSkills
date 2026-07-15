@@ -200,7 +200,53 @@ def parseArgs(argv: list[str] | None) -> argparse.Namespace:
         default="gene_lists",
         help="Intermediate GMT basename for manifest mode (default gene_lists).",
     )
+    parser.add_argument(
+        "--significanceThreshold",
+        type=float,
+        default=0.05,
+        help="Raw p/FDR cutoff shared by heatmaps and dot plots (grey below -log10 of this). Default: 0.05.",
+    )
+    parser.add_argument(
+        "--colorVmin",
+        type=float,
+        default=0.0,
+        help="Minimum of -log10 color scale for heatmaps/dotplots. Default: 0.",
+    )
+    parser.add_argument(
+        "--colorVmax",
+        type=float,
+        default=5.0,
+        help="Maximum of -log10 color scale for heatmaps/dotplots. Default: 5.",
+    )
+    parser.add_argument(
+        "--firstSignificantEdge",
+        type=float,
+        default=1.5,
+        help="Preferred -log10 end of the first significant color bin. Default: 1.5.",
+    )
+    parser.add_argument(
+        "--colorStep",
+        type=float,
+        default=0.5,
+        help="Regular -log10 bin width after the first significant edge. Default: 0.5.",
+    )
     return parser.parse_args(argv)
+
+
+def colorScaleCliArgs(args: argparse.Namespace) -> list[str]:
+    """Return enrichr_api CLI flags for the shared heatmap/dotplot color scale."""
+    return [
+        "--significanceThreshold",
+        str(args.significanceThreshold),
+        "--colorVmin",
+        str(args.colorVmin),
+        "--colorVmax",
+        str(args.colorVmax),
+        "--firstSignificantEdge",
+        str(args.firstSignificantEdge),
+        "--colorStep",
+        str(args.colorStep),
+    ]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -287,7 +333,7 @@ def main(argv: list[str] | None = None) -> int:
             args.libraryPreset,
             "-e",
             args.engine,
-        ]
+        ] + colorScaleCliArgs(args)
         lgr.info("Running: %s", " ".join(cmd))
         subprocess.run(cmd, cwd=str(run_root), check=True)
 
@@ -332,7 +378,7 @@ def main(argv: list[str] | None = None) -> int:
             args.libraryPreset,
             "-e",
             args.engine,
-        ]
+        ] + colorScaleCliArgs(args)
         lgr.info("Running: %s", " ".join(cmd))
         subprocess.run(cmd, cwd=str(run_root), check=True)
         meta.update({"gmt": str(gmt_path), "gmt_output_dir": args.outPrefix})
@@ -360,7 +406,7 @@ def main(argv: list[str] | None = None) -> int:
             args.libraryPreset,
             "-e",
             args.engine,
-        ]
+        ] + colorScaleCliArgs(args)
         lgr.info("Running: %s", " ".join(cmd))
         subprocess.run(cmd, cwd=str(run_root), check=True)
         meta.update({"manifest": str(manifest_path), "built_gmt": str(tmp_gmt)})

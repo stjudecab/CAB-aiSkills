@@ -39,6 +39,11 @@ from functools import reduce
 import logging
 from pdb import set_trace
 
+_SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+if _SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, _SCRIPTS_DIR)
+from significance_colormap import make_significance_colormap, apply_boundary_colorbar_ticks
+
 #export HTTP_PROXY="http://10.43.51.93:808"
 #export HTTPS_PROXY="http://10.43.51.93:808"
 
@@ -117,6 +122,8 @@ def make_colormap(seq):
     return mcolors.LinearSegmentedColormap('CustomMap', cdict)
 
 def getCmaps():
+    # Historic continuous-looking palettes (grey first). Prefer
+    # significance_colormap.make_significance_colormap for new heatmaps / dotplots.
     # to design new color palette do e.g. this 'sns.color_palette("rocket_r", 9), and add the output after 'ConvertRGB2sth(208,206,206)', which stands for grey color. Uselful info also here: https://seaborn.pydata.org/tutorial/color_palettes.html
     cmap_grey_rocket_r = sns.color_palette([ConvertRGB2sth(208,206,206),
                                             (0.96739773, 0.77451297, 0.65057302),
@@ -149,6 +156,51 @@ def getCmaps():
                                             (0.7364705882352941, 0.08, 0.10117647058823528),
                                             (0.5946174548250673, 0.04613610149942329, 0.07558631295655516)])
     return cmap_grey_rocket_r, cmap_grey_Oranges, cmap_grey_Reds
+
+
+def plot_summary_heatmap(
+    df_plot,
+    outfile,
+    palette,
+    cbar_label,
+    significance_threshold=0.05,
+    color_vmin=0.0,
+    color_vmax=5.0,
+    first_significant_edge=1.5,
+    color_step=0.5,
+    colorbar_decimals=1,
+):
+    """Write a top-pathway heatmap using the shared thresholded stepped colormap.
+
+    Filenames should include the ``heatmap`` suffix (caller responsibility).
+    """
+    cmap, norm, boundaries = make_significance_colormap(
+        palette=palette,
+        vmin=color_vmin,
+        vmax=color_vmax,
+        significance_threshold=significance_threshold,
+        first_significant_edge=first_significant_edge,
+        color_step=color_step,
+    )
+    fig, ax = plt.subplots()
+    hm = sns.heatmap(
+        df_plot,
+        cmap=cmap,
+        norm=norm,
+        cbar_kws={"label": cbar_label},
+        linewidths=0.5,
+        ax=ax,
+    )
+    apply_boundary_colorbar_ticks(hm.collections[0].colorbar, boundaries, decimals=colorbar_decimals)
+    plt.setp(ax.get_xticklabels(), rotation=45, horizontalalignment="right")
+    plt.savefig(outfile, bbox_inches="tight", dpi=300)
+    plt.close(fig)
+    logging.info(
+        "Wrote heatmap %s (boundaries=%s)",
+        outfile,
+        ",".join("{:.1f}".format(b) for b in boundaries),
+    )
+
 
 def check(test_str, allowed = set(string.ascii_lowercase + string.digits + '.' + "-" + "_" + "/")):
     '''this function will quickly check if the gene set name has only signs allowed for making them folder and filenames. Returns Bool value'''
@@ -215,6 +267,11 @@ def gmt_run_pathway_dotplot(
     output_prefix,
     significance_column,
     terms,
+    significance_threshold=0.05,
+    color_vmin=0.0,
+    color_vmax=5.0,
+    first_significant_edge=1.5,
+    color_step=0.5,
 ):
     """Run pathway_dotplot.py; log failures without aborting enrichr_api."""
     if not terms:
@@ -235,6 +292,11 @@ def gmt_run_pathway_dotplot(
         "--significanceColumn", significance_column,
         "--colormap", "auto",
         "--pathwaysOfInterest", os.path.abspath(poi_path),
+        "--significanceThreshold", str(significance_threshold),
+        "--colorVmin", str(color_vmin),
+        "--colorVmax", str(color_vmax),
+        "--firstSignificantEdge", str(first_significant_edge),
+        "--colorStep", str(color_step),
     ]
     logging.info("pathway dotplot: {}".format(" ".join(cmd)))
     try:
@@ -280,6 +342,46 @@ def main(argv):
             dest="mode", help="api: getresults; sum(:summary)|sumerge[_80](:merge terms of 80% overlap)|raw ", metavar="<file>", default="api,sum")
     parser.add_option("-e", "--engine", action="store", type=str,
             dest="engine", help="Engine, so either 'Enrichr' or 'YeastEnrichr'. By default = 'Enrichr'.", default="Enrichr")#, choices=['Enrichr', 'YeastEnrichr'])
+    parser.add_option(
+        "--significanceThreshold",
+        action="store",
+        type="float",
+        dest="significance_threshold",
+        default=0.05,
+        help="Raw p/FDR cutoff shared by heatmaps and dotplots (grey below -log10 of this). Default: 0.05.",
+    )
+    parser.add_option(
+        "--colorVmin",
+        action="store",
+        type="float",
+        dest="color_vmin",
+        default=0.0,
+        help="Minimum of -log10 color scale for heatmaps/dotplots. Default: 0.",
+    )
+    parser.add_option(
+        "--colorVmax",
+        action="store",
+        type="float",
+        dest="color_vmax",
+        default=5.0,
+        help="Maximum of -log10 color scale for heatmaps/dotplots. Default: 5.",
+    )
+    parser.add_option(
+        "--firstSignificantEdge",
+        action="store",
+        type="float",
+        dest="first_significant_edge",
+        default=1.5,
+        help="Preferred -log10 end of first significant color bin. Default: 1.5.",
+    )
+    parser.add_option(
+        "--colorStep",
+        action="store",
+        type="float",
+        dest="color_step",
+        default=0.5,
+        help="Regular -log10 bin width after the first significant edge. Default: 0.5.",
+    )
     (opt, args) = parser.parse_args(argv)
     if len(argv) < 2:
         parser.print_help()
@@ -558,11 +660,20 @@ def main(argv):
             (dfsJoined[['NAME']+FDRColumns]).to_csv("{}.summary_FDRs.tsv".format(os.path.basename(opt.f1).replace(".gmt", "")), sep='\t', index=False)
 
             ## Plot top 10 gene signatures:
-            cmap_grey_rocket_r, cmap_grey_Oranges, cmap_grey_Reds = getCmaps()
-#             SeabornVersion = str(sns.__version__).split(".")
-#             if int(SeabornVersion[0]) >= 0 and int(SeabornVersion[1]) >= 11:
-#             df_plot_p = (dfsJoined[pValColumns]).head(10).copy()
-#             df_plot_f = (dfsJoined[FDRColumns]).head(10).copy()
+            heat_kw = dict(
+                significance_threshold=float(opt.significance_threshold),
+                color_vmin=float(opt.color_vmin),
+                color_vmax=float(opt.color_vmax),
+                first_significant_edge=float(opt.first_significant_edge),
+                color_step=float(opt.color_step),
+            )
+            dot_kw = dict(
+                significance_threshold=float(opt.significance_threshold),
+                color_vmin=float(opt.color_vmin),
+                color_vmax=float(opt.color_vmax),
+                first_significant_edge=float(opt.first_significant_edge),
+                color_step=float(opt.color_step),
+            )
             
             if len(dfsJoined) > 0: #sanity check
                 gmt_base = os.path.basename(opt.f1).replace(".gmt", "")
@@ -591,91 +702,101 @@ def main(argv):
                         "pathway_dotplot.py not found (tried {} and {}); skipping GMT summary dotplots".format(c0, c1)
                     )
 
-                fig, ax = plt.subplots()
                 dfsJoined.sort_values('rankingSumPval', ascending=False, inplace=True)
                 df_plot = (dfsJoined[pValColumns]).head(10).copy()
-                ax = sns.heatmap(df_plot, vmin=0, vmax=5, cmap=cmap_grey_Oranges, cbar_kws={'label': "-log10(p-value)"}, linewidths=.5)
-                plt.setp(ax.get_xticklabels(), rotation=45, horizontalalignment='right')
-                plt.savefig("{}.summary_pvals.top10.pdf".format(os.path.basename(opt.f1).replace(".gmt", "")), bbox_inches='tight', dpi=300)
-                plt.close()
+                plot_summary_heatmap(
+                    df_plot,
+                    "{}.summary_pvals.top10.heatmap.pdf".format(os.path.basename(opt.f1).replace(".gmt", "")),
+                    palette="oranges",
+                    cbar_label="-log10(p-value)",
+                    **heat_kw,
+                )
                 
-                fig, ax = plt.subplots()
                 dfsJoined.sort_values('rankingSumFDR', ascending=False, inplace=True)
                 df_plot = (dfsJoined[FDRColumns]).head(10).copy()
-                ax = sns.heatmap(df_plot, vmin=0, vmax=5, cmap=cmap_grey_Reds, cbar_kws={'label': "-log10(FDR)"}, linewidths=.5)
-                plt.setp(ax.get_xticklabels(), rotation=45, horizontalalignment='right')
-                plt.savefig("{}.summary_FDRs.top10.pdf".format(os.path.basename(opt.f1).replace(".gmt", "")), bbox_inches='tight', dpi=300)
-                plt.close()
+                plot_summary_heatmap(
+                    df_plot,
+                    "{}.summary_FDRs.top10.heatmap.pdf".format(os.path.basename(opt.f1).replace(".gmt", "")),
+                    palette="reds",
+                    cbar_label="-log10(FDR)",
+                    **heat_kw,
+                )
                 
                 if UpSwitch == 1:
-#                     df_plot = dfsJoined.sort_values('rankingSumUp', ascending=False)
-#                     df_plot_p = (df_plot[pValColumnsUp]).head(10).copy()
-#                     df_plot_f = (df_plot[FDRColumnsUp]).head(10).copy()
-                    
-                    fig, ax = plt.subplots()
                     dfsJoined.sort_values('rankingSumUpPval', ascending=False, inplace=True)
                     df_plot = (dfsJoined[pValColumnsUp]).head(10).copy()
-                    ax = sns.heatmap(df_plot, vmin=0, vmax=5, cmap=cmap_grey_Oranges, cbar_kws={'label': "-log10(p-value)"}, linewidths=.5)
-                    plt.setp(ax.get_xticklabels(), rotation=45, horizontalalignment='right')
-                    plt.savefig("{}.summary_pvals.top10Up.pdf".format(os.path.basename(opt.f1).replace(".gmt", "")), bbox_inches='tight', dpi=300)
-                    plt.close()
+                    plot_summary_heatmap(
+                        df_plot,
+                        "{}.summary_pvals.top10Up.heatmap.pdf".format(os.path.basename(opt.f1).replace(".gmt", "")),
+                        palette="oranges",
+                        cbar_label="-log10(p-value)",
+                        **heat_kw,
+                    )
                     
-                    fig, ax = plt.subplots()
                     dfsJoined.sort_values('rankingSumUpFDR', ascending=False, inplace=True)
                     df_plot = (dfsJoined[FDRColumnsUp]).head(10).copy()
-                    ax = sns.heatmap(df_plot, vmin=0, vmax=5, cmap=cmap_grey_Reds, cbar_kws={'label': "-log10(FDR)"}, linewidths=.5)
-                    plt.setp(ax.get_xticklabels(), rotation=45, horizontalalignment='right')
-                    plt.savefig("{}.summary_FDRs.top10Up.pdf".format(os.path.basename(opt.f1).replace(".gmt", "")), bbox_inches='tight', dpi=300)
-                    plt.close()
-                    
-#                     df_plot = dfsJoined.sort_values('rankingSumDown', ascending=False)
-#                     df_plot_p = (df_plot[pValColumnsDown]).head(10).copy()
-#                     df_plot_f = (df_plot[FDRColumnsDown]).head(10).copy()
+                    plot_summary_heatmap(
+                        df_plot,
+                        "{}.summary_FDRs.top10Up.heatmap.pdf".format(os.path.basename(opt.f1).replace(".gmt", "")),
+                        palette="reds",
+                        cbar_label="-log10(FDR)",
+                        **heat_kw,
+                    )
                 
                 if DownSwitch == 1:
-                    fig, ax = plt.subplots()
                     dfsJoined.sort_values('rankingSumDownPval', ascending=False, inplace=True)
                     df_plot = (dfsJoined[pValColumnsDown]).head(10).copy()
-                    ax = sns.heatmap(df_plot, vmin=0, vmax=5, cmap=cmap_grey_Oranges, cbar_kws={'label': "-log10(p-value)"}, linewidths=.5)
-                    plt.setp(ax.get_xticklabels(), rotation=45, horizontalalignment='right')
-                    plt.savefig("{}.summary_pvals.top10Down.pdf".format(os.path.basename(opt.f1).replace(".gmt", "")), bbox_inches='tight', dpi=300)
-                    plt.close()
+                    plot_summary_heatmap(
+                        df_plot,
+                        "{}.summary_pvals.top10Down.heatmap.pdf".format(os.path.basename(opt.f1).replace(".gmt", "")),
+                        palette="oranges",
+                        cbar_label="-log10(p-value)",
+                        **heat_kw,
+                    )
                     
-                    fig, ax = plt.subplots()
                     dfsJoined.sort_values('rankingSumDownFDR', ascending=False, inplace=True)
                     df_plot = (dfsJoined[FDRColumnsDown]).head(10).copy()
-                    ax = sns.heatmap(df_plot, vmin=0, vmax=5, cmap=cmap_grey_Reds, cbar_kws={'label': "-log10(FDR)"}, linewidths=.5)
-                    plt.setp(ax.get_xticklabels(), rotation=45, horizontalalignment='right')
-                    plt.savefig("{}.summary_FDRs.top10Down.pdf".format(os.path.basename(opt.f1).replace(".gmt", "")), bbox_inches='tight', dpi=300)
-                    plt.close()
+                    plot_summary_heatmap(
+                        df_plot,
+                        "{}.summary_FDRs.top10Down.heatmap.pdf".format(os.path.basename(opt.f1).replace(".gmt", "")),
+                        palette="reds",
+                        cbar_label="-log10(FDR)",
+                        **heat_kw,
+                    )
 
                 if dotplot_manifest_path is not None:
                     py_exe = sys.executable
                     gmt_run_pathway_dotplot(
                         pathway_dotplot_py, py_exe, os.getcwd(), dotplot_manifest_path, gmt_base,
                         "summary_pvals_top10", "{}.summary_pvals.top10".format(gmt_base), "pvalue", terms_pval_top,
+                        **dot_kw,
                     )
                     gmt_run_pathway_dotplot(
                         pathway_dotplot_py, py_exe, os.getcwd(), dotplot_manifest_path, gmt_base,
                         "summary_FDRs_top10", "{}.summary_FDRs.top10".format(gmt_base), "adjustedPvalue", terms_fdr_top,
+                        **dot_kw,
                     )
                     if UpSwitch == 1:
                         gmt_run_pathway_dotplot(
                             pathway_dotplot_py, py_exe, os.getcwd(), dotplot_manifest_path, gmt_base,
                             "summary_pvals_top10Up", "{}.summary_pvals.top10Up".format(gmt_base), "pvalue", terms_up_pval_top,
+                            **dot_kw,
                         )
                         gmt_run_pathway_dotplot(
                             pathway_dotplot_py, py_exe, os.getcwd(), dotplot_manifest_path, gmt_base,
                             "summary_FDRs_top10Up", "{}.summary_FDRs.top10Up".format(gmt_base), "adjustedPvalue", terms_up_fdr_top,
+                            **dot_kw,
                         )
                     if DownSwitch == 1:
                         gmt_run_pathway_dotplot(
                             pathway_dotplot_py, py_exe, os.getcwd(), dotplot_manifest_path, gmt_base,
                             "summary_pvals_top10Down", "{}.summary_pvals.top10Down".format(gmt_base), "pvalue", terms_dn_pval_top,
+                            **dot_kw,
                         )
                         gmt_run_pathway_dotplot(
                             pathway_dotplot_py, py_exe, os.getcwd(), dotplot_manifest_path, gmt_base,
                             "summary_FDRs_top10Down", "{}.summary_FDRs.top10Down".format(gmt_base), "adjustedPvalue", terms_dn_fdr_top,
+                            **dot_kw,
                         )
                     
             else:

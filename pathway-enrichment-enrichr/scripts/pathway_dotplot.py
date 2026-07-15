@@ -35,7 +35,6 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from matplotlib import cm
-from matplotlib.colors import ListedColormap
 from matplotlib.lines import Line2D
 import seaborn as sns
 
@@ -44,12 +43,18 @@ try:
 except ImportError:
     RichHandler = None  # type: ignore
 
+from significance_colormap import (
+    NONSIGNIFICANT_FACE_COLOR,
+    apply_boundary_colorbar_ticks,
+    colorbar_label_for_column,
+    make_significance_colormap,
+    palette_for_column,
+)
+
 # Axes (data) panel fill; white ring in GSEApy-style dots stays visible against this grey.
 RING_PANEL_FACE_COLOR = "#F2F3F5"
 # Matplotlib figure canvas behind axes (margins, colorbar area outside axes patch stay white).
 FIGURE_CANVAS_FACE_COLOR = "white"
-# Nonsignificant (p > threshold) and missing-pathway cells when enabled; same fill for both.
-NONSIGNIFICANT_FACE_COLOR = "#9e9e9e"
 
 
 def configureLogging(
@@ -108,62 +113,6 @@ def str2bool(value: Union[str, bool]) -> bool:
 def convertRgbToUnit(r: float, g: float, b: float) -> Tuple[float, float, float]:
     """Convert 0-255 RGB to 0-1 floats for matplotlib."""
     return (r / 255.0, g / 255.0, b / 255.0)
-
-
-def getHeatmapStyleColormaps() -> Tuple[ListedColormap, ListedColormap, ListedColormap]:
-    """Build the same grey-anchored palettes used in enrichr_api heatmaps.
-
-    Returns:
-        Tuple of ListedColormap: (rocket_r style, Oranges for -log10 P, Reds for -log10 FDR).
-    """
-    grey = convertRgbToUnit(208, 206, 206)
-    cmap_grey_rocket_r = sns.color_palette(
-        [
-            grey,
-            (0.96739773, 0.77451297, 0.65057302),
-            (0.96298491, 0.6126247, 0.45145074),
-            (0.95165009, 0.44224144, 0.30214494),
-            (0.90848638, 0.24568473, 0.24598324),
-            (0.79085854, 0.10184672, 0.313391),
-            (0.63139686, 0.10067417, 0.35664819),
-            (0.45809049, 0.12142996, 0.34540024),
-            (0.29977678, 0.11356089, 0.29254823),
-            (0.14633406, 0.07973393, 0.1986151),
-        ]
-    )
-    cmap_grey_oranges = sns.color_palette(
-        [
-            grey,
-            (0.9969242599000384, 0.914648212226067, 0.8323721645520954),
-            (0.9937254901960785, 0.8501960784313726, 0.7043137254901961),
-            (0.9921568627450981, 0.7644444444444445, 0.5524029219530949),
-            (0.9921568627450981, 0.6564705882352941, 0.3827450980392157),
-            (0.9914186851211073, 0.550726643598616, 0.23277201076509035),
-            (0.9545098039215686, 0.44, 0.10666666666666666),
-            (0.8871510957324106, 0.3320876585928489, 0.03104959630911188),
-            (0.7709803921568628, 0.2541176470588235, 0.007058823529411764),
-            (0.6179930795847751, 0.19907727797001154, 0.012610534409842366),
-        ]
-    )
-    cmap_grey_reds = sns.color_palette(
-        [
-            grey,
-            (0.9969242599000384, 0.8961937716262975, 0.8489042675893886),
-            (0.9913725490196079, 0.7913725490196079, 0.7082352941176471),
-            (0.9882352941176471, 0.6715417147251057, 0.5605382545174933),
-            (0.9874509803921568, 0.5411764705882353, 0.41568627450980394),
-            (0.9835755478662053, 0.4127950788158401, 0.28835063437139563),
-            (0.9466666666666667, 0.26823529411764707, 0.19607843137254902),
-            (0.8503344867358708, 0.14686658977316416, 0.13633217993079583),
-            (0.7364705882352941, 0.08, 0.10117647058823528),
-            (0.5946174548250673, 0.04613610149942329, 0.07558631295655516),
-        ]
-    )
-    return (
-        ListedColormap(cmap_grey_rocket_r),
-        ListedColormap(cmap_grey_oranges),
-        ListedColormap(cmap_grey_reds),
-    )
 
 
 def negLog10Safe(value: float, floor: float = 1e-10) -> float:
@@ -497,28 +446,45 @@ def collectPlotRecords(
 def resolveColormap(
     colormap_arg: str,
     significance: str,
-) -> Tuple[mcolors.Colormap, str]:
-    """Resolve matplotlib colormap and colorbar label.
+    *,
+    vmin: float = 0.0,
+    vmax: float = 5.0,
+    significance_threshold: float = 0.05,
+    first_significant_edge: float = 1.5,
+    color_step: float = 0.5,
+) -> Tuple[mcolors.Colormap, Optional[mcolors.Normalize], str, Optional[List[float]]]:
+    """Resolve matplotlib colormap, optional BoundaryNorm, and colorbar label.
+
+    For ``colormap=auto`` (default), builds a threshold-aware stepped palette that
+    greys values with -log10 below -log10(significance_threshold), matching heatmaps.
 
     Args:
         colormap_arg (str): ``auto`` or a registered matplotlib colormap name.
         significance (str): adjustedPvalue vs pvalue (used when auto).
+        vmin / vmax / significance_threshold / first_significant_edge / color_step:
+            Thresholded scale parameters (used when colormap is auto).
 
     Returns:
-        Tuple of (Colormap, colorbar label string).
+        Tuple of (Colormap, Normalize or None, colorbar label, boundaries or None).
     """
+    cb_label = colorbar_label_for_column(significance)
     if colormap_arg.lower() == "auto":
-        _, oranges, reds = getHeatmapStyleColormaps()
-        if significance == "adjustedPvalue":
-            return reds, "-log10(FDR)"  # aligned with enrichr_api FDR heatmap label
-        return oranges, "-log10(p-value)"
+        cmap, norm, boundaries = make_significance_colormap(
+            palette=palette_for_column(significance),
+            vmin=vmin,
+            vmax=vmax,
+            significance_threshold=significance_threshold,
+            first_significant_edge=first_significant_edge,
+            color_step=color_step,
+        )
+        return cmap, norm, cb_label, boundaries
     try:
         cmap = matplotlib.colormaps[colormap_arg]  # matplotlib >= 3.7
     except Exception:
         cmap = cm.get_cmap(colormap_arg)
     if significance == "adjustedPvalue":
-        return cmap, "-log10(adjusted P-value)"
-    return cmap, "-log10(P-value)"
+        return cmap, None, "-log10(adjusted P-value)", None
+    return cmap, None, "-log10(P-value)", None
 
 
 def scatterDotplot(
@@ -538,15 +504,18 @@ def scatterDotplot(
     x_sample_order: Sequence[str],
     legendLabelSpacing: float = 2.15,
     legendBorderPad: float = 0.9,
+    norm: Optional[mcolors.Normalize] = None,
+    boundaries: Optional[Sequence[float]] = None,
+    colorbar_decimals: int = 1,
 ) -> Tuple[plt.Figure, plt.Axes]:
     """Draw a dot plot with optional outer ring (GSEApy-style).
 
     Args:
         plot_df (pd.DataFrame): Must contain display, sample, neg_log10, size_value, plot_status.
-        cmap (Colormap): Colormap for -log10 values (significant points only).
+        cmap (Colormap): Colormap for -log10 values.
         colorbar_label (str): Colorbar title.
-        vmin (float): Color scale minimum.
-        vmax (float): Color scale maximum.
+        vmin (float): Color scale minimum (used when ``norm`` is None).
+        vmax (float): Color scale maximum (used when ``norm`` is None).
         size_metric_key (str): Name of size metric for legend text.
         show_ring (bool): Draw visible edge around markers.
         figure_title (str, optional): If set, figure title; if None or empty, no title.
@@ -558,6 +527,10 @@ def scatterDotplot(
         x_sample_order (Sequence[str]): Sample columns left-to-right.
         legendLabelSpacing (float): Vertical gap between size-legend rows (matplotlib ``labelspacing``).
         legendBorderPad (float): Padding inside the size-legend frame.
+        norm (Normalize, optional): If set (thresholded BoundaryNorm), used instead of vmin/vmax
+            continuous scaling so grey / stepped bins match heatmaps.
+        boundaries (Sequence[float], optional): Boundary edges for colorbar tick labels.
+        colorbar_decimals (int): Decimal places on colorbar tick labels (default 1 → ``1.3``).
 
     Returns:
         Tuple of (Figure, Axes).
@@ -570,16 +543,24 @@ def scatterDotplot(
     plot_df = plot_df.reset_index(drop=True)
     if "plot_status" not in plot_df.columns:
         plot_df = plot_df.assign(plot_status="significant")
-    is_sig = (plot_df["plot_status"] == "significant").to_numpy()
-    is_grey = plot_df["plot_status"].isin(["nonsignificant", "missing"]).to_numpy()
+    # Found points (sig + nonsig) share the thresholded colormap; missing stay fixed grey.
+    is_found = plot_df["plot_status"].isin(["significant", "nonsignificant"]).to_numpy()
+    is_missing = (plot_df["plot_status"] == "missing").to_numpy()
 
     sizes = plot_df["size_value"].to_numpy(dtype=float)
-    smin = float(np.min(sizes))
-    smax = float(np.max(sizes))
+    # Missing rows may carry NaN size; size-scale using found points only.
+    size_basis = sizes[is_found] if np.any(is_found) else sizes[np.isfinite(sizes)]
+    if len(size_basis) == 0:
+        size_basis = np.array([1.0], dtype=float)
+    smin = float(np.nanmin(size_basis))
+    smax = float(np.nanmax(size_basis))
+    if not np.isfinite(smin) or not np.isfinite(smax):
+        smin, smax = 0.0, 1.0
     if smin == smax:
         size_pts = np.full(len(plot_df), 80.0 * dot_scale)
     else:
         norm_sz = (sizes - smin) / (smax - smin)
+        norm_sz = np.where(np.isfinite(norm_sz), norm_sz, 0.5)
         size_pts = (30.0 + 220.0 * norm_sz) * dot_scale
 
     fig, ax = plt.subplots(figsize=figsize)
@@ -595,7 +576,9 @@ def scatterDotplot(
     # invisible on a default white axes face; use an off-white panel so
     # the white ring reads as a ring, not only a black outer halo.
     if show_ring:
-        smax_area = float(np.max(size_pts))
+        smax_area = float(np.max(size_pts[np.isfinite(size_pts)])) if np.any(
+            np.isfinite(size_pts)
+        ) else 80.0 * dot_scale
         ring_black = 1.6
         ring_white = 1.3
         ax.scatter(
@@ -618,24 +601,26 @@ def scatterDotplot(
         )
 
     sc = None
-    if np.any(is_sig):
-        sc = ax.scatter(
-            xs[is_sig],
-            ys[is_sig],
-            s=size_pts[is_sig],
-            c=plot_df.loc[is_sig, "neg_log10"].to_numpy(dtype=float),
+    if np.any(is_found):
+        scatter_kw = dict(
+            s=size_pts[is_found],
+            c=plot_df.loc[is_found, "neg_log10"].to_numpy(dtype=float),
             cmap=cmap,
-            vmin=vmin,
-            vmax=vmax,
             edgecolors="none",
             linewidths=0.0,
             zorder=3 if show_ring else 1,
         )
-    if np.any(is_grey):
+        if norm is not None:
+            scatter_kw["norm"] = norm
+        else:
+            scatter_kw["vmin"] = vmin
+            scatter_kw["vmax"] = vmax
+        sc = ax.scatter(xs[is_found], ys[is_found], **scatter_kw)
+    if np.any(is_missing):
         ax.scatter(
-            xs[is_grey],
-            ys[is_grey],
-            s=size_pts[is_grey],
+            xs[is_missing],
+            ys[is_missing],
+            s=size_pts[is_missing],
             c=NONSIGNIFICANT_FACE_COLOR,
             edgecolors="none",
             linewidths=0.0,
@@ -653,6 +638,10 @@ def scatterDotplot(
     if sc is not None:
         cbar = fig.colorbar(sc, ax=ax, shrink=0.6)
         cbar.set_label(colorbar_label)
+        if boundaries is not None:
+            apply_boundary_colorbar_ticks(
+                cbar, boundaries, decimals=int(colorbar_decimals)
+            )
 
     # Size legend: representative markers at min/mid/max (marker size ~ sqrt scatter s)
     legend_handles: List[Line2D] = []
@@ -786,20 +775,34 @@ def parseArgs(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         "--colormap",
         default="auto",
         type=str,
-        help="Colormap: 'auto' uses enrichr_api-style greys+Reds (FDR) or greys+Oranges (P); "
-        "otherwise any matplotlib registered name (e.g. viridis_r).",
+        help="Colormap: 'auto' uses threshold-aware stepped greys+Reds (FDR) or greys+Oranges (P) "
+        "shared with enrichr_api heatmaps; otherwise any matplotlib registered name (e.g. viridis_r).",
     )
     parser.add_argument(
         "--colorVmin",
         default=0.0,
         type=float,
-        help="Minimum for color scale (default 0, matching enrichr_api heatmaps).",
+        help="Minimum for color scale -log10 (default 0, matching enrichr_api heatmaps).",
     )
     parser.add_argument(
         "--colorVmax",
         default=5.0,
         type=float,
-        help="Maximum for color scale (default 5, matching enrichr_api heatmaps).",
+        help="Maximum for color scale -log10 (default 5, matching enrichr_api heatmaps).",
+    )
+    parser.add_argument(
+        "--colorStep",
+        default=0.5,
+        type=float,
+        help="Regular -log10 bin width after the first significant edge when --colormap auto "
+        "(default 0.5).",
+    )
+    parser.add_argument(
+        "--firstSignificantEdge",
+        default=1.5,
+        type=float,
+        help="Preferred -log10 end of the first significant color bin when --colormap auto "
+        "(default 1.5; grey covers [vmin, -log10(threshold)) ).",
     )
     parser.add_argument(
         "--sizeMetric",
@@ -890,7 +893,7 @@ def parseArgs(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         default=0.05,
         type=float,
         help="Threshold on the raw p column used for color (--significanceColumn): "
-        "values above are drawn in neutral grey (nonsignificant). Default: 0.05.",
+        "values above are grey on the shared stepped color scale (same as heatmaps). Default: 0.05.",
     )
     parser.add_argument(
         "--markMissingLikeNonsignificant",
@@ -1007,7 +1010,22 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         mark_missing_like_nonsignificant=str2bool(args.markMissingLikeNonsignificant),
     )
 
-    cmap, cb_label = resolveColormap(args.colormap, args.significanceColumn)
+    cmap, color_norm, cb_label, boundaries = resolveColormap(
+        args.colormap,
+        args.significanceColumn,
+        vmin=float(args.colorVmin),
+        vmax=float(args.colorVmax),
+        significance_threshold=float(args.significanceThreshold),
+        first_significant_edge=float(args.firstSignificantEdge),
+        color_step=float(args.colorStep),
+    )
+    if boundaries is not None:
+        lgr.info(
+            "Color boundaries (-log10): %s (threshold=%s -> grey below %.4f)",
+            ", ".join("{:.4g}".format(b) for b in boundaries),
+            args.significanceThreshold,
+            boundaries[1] if len(boundaries) > 1 else float("nan"),
+        )
 
     size_names = {
         "oddsRatio": "Odds ratio",
@@ -1077,6 +1095,9 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         x_sample_order=sample_order,
         legendLabelSpacing=float(args.legendLabelSpacing),
         legendBorderPad=float(args.legendBorderPad),
+        norm=color_norm,
+        boundaries=boundaries,
+        colorbar_decimals=1,
     )
 
     base = out_dir / prefix

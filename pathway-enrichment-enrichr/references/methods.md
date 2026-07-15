@@ -28,7 +28,17 @@
 - **Merged tables** (`*.sum.p5`, `*.sum.q5`, `*.sum.all`): combined across libraries with a **`Database`** column; sorted by reported combined score column as in `enrichr_api.py`.
 - **Single-list Excel**: `{excelStem}.GenesLists.xlsx`, `{excelStem}.fc_q0.05.xlsx`, `{excelStem}.fc_p0.05.xlsx` plus companion spreadsheet index TXT files.
 - **Single-list figures**: `{outPrefix}.sum.q5.pdf`, `{outPrefix}.sum.p5.pdf` (top 10 rows when present).
-- **GMT batch**: under `{outPrefix}/`, Excel gene list and FDR/nominal workbooks using the GMT stem, combined `summary_pvals.tsv` / `summary_FDRs.tsv`, heatmaps `*.summary_* .top10.pdf`, and dot plots when `pathway_dotplot.py` runs successfully.
+- **GMT batch**: under `{outPrefix}/`, Excel gene list and FDR/nominal workbooks using the GMT stem, combined `summary_pvals.tsv` / `summary_FDRs.tsv`, heatmaps `*.summary_*.top10.heatmap.pdf`, and dot plots `*.summary_*.top10.dotplot.pdf` / `.png` when `pathway_dotplot.py` runs successfully.
+
+### Shared color scale (heatmaps and dot plots)
+
+Both GMT summary heatmaps and dot plots use `significance_colormap.py`:
+
+- `--significanceThreshold` (default `0.05`): values with `-log10(sig)` below `-log10(threshold)` are **grey**.
+- Significant values use a **stepped** palette (oranges for p-value, reds for FDR).
+- Defaults: `--colorVmin 0`, `--colorVmax 5`, `--firstSignificantEdge 1.5`, `--colorStep 0.5`, so bins are approximately
+  `[0, 1.301)`, `[1.301, 1.5)`, `[1.5, 2.0)`, …, `[4.5, 5.0]` (colorbar labels show **1 decimal place**, e.g. `1.3`).
+- Threshold / vmin / vmax / first edge / step are configurable on `enrichr_api.py` and `pathway_dotplot.py` so both figures stay aligned.
 
 ## Manifest column aliases
 
