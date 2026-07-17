@@ -79,3 +79,11 @@ Runs **genomic region annotation and interpretation** for ATAC-seq, ChIP-seq, CU
 **Order-independent overlap** of genomic region sets (ChIP-seq, ATAC-seq, CUT&Tag, CUT&RUN, narrowPeak/broadPeak/BED) or gene sets (GMT) with **Intervene** (Venn / UpSet / pairwise), producing a membership matrix and mutually exclusive per-sector files. Optionally chains the **`genomic-regions-annotation`** skill for nearby-gene annotation and the **`pathway-enrichment-enrichr`** skill for Enrichr pathway enrichment of **both** the intersection sectors and the original inputs, plus gated expression summaries. Requires an explicitly stated genome build for annotation/pathway steps; motif enrichment and deeptools are planned but not yet available.
 
 **Example prompt:** *Overlap the three BED files in `genomic-set-analysis/examples`, annotate against `hg38`, and run pathway enrichment for each intersection and for the original files; write outputs under `agentResults/`.*
+
+---
+
+### [colorblind-sim](colorblind-sim/README.md)
+
+Simulates how figures appear under **color vision deficiency (CVD)** using **CBviz** (protanopia, deuteranopia, tritanopia, monochrome). Accepts PNG/JPEG/TIFF directly; converts PDF (and SVG/EPS when host tools are available) to PNG before simulation. Writes multi-panel preview figures plus a full run audit trail.
+
+**Example prompt:** *Simulate colorblindness on my volcano plot `figures/volcano.png` (or `figure.pdf`) and save the CBviz panels under `agentResults/`.*

@@ -71,8 +71,11 @@ Use **multiple sentences or bullets**, not one vague credit.
 
 > Genomic region sets were overlapped in an order-independent manner with **Intervene** (Khan & Mathelier, *BMC Bioinformatics* 2017) and **BEDTools**/pybedtools (Quinlan & Hall, 2010; see `genomic-set-analysis/references/citations.md`). Analysis was run via the **CAB-aiSkills** `genomic-set-analysis` skill (skill author(s) in [AUTHORS.md](../AUTHORS.md); repository URL); chained annotation and Enrichr pathway enrichment used the `genomic-regions-annotation` and `pathway-enrichment-enrichr` skills with the stated genome build.
 
-**Do not** cite skill author(s) as the inventor of Intervene, ChIP-R, Enrichr, or other third-party methods.
+**Example (colorblind simulation):**
 
+> Figure appearance under color vision deficiency was simulated with **CBviz** (Flynn; https://github.com/wflynny/cbviz) using **colorspacious** transforms (see `colorblind-sim/references/citations.md`). Analysis was run via the **CAB-aiSkills** `colorblind-sim` skill (skill author(s) in [AUTHORS.md](../AUTHORS.md); repository URL).
+
+**Do not** cite skill author(s) as the inventor of Intervene, ChIP-R, Enrichr, CBviz, or other third-party methods.
 ## Agent reporting rules
 
 When a skill run completes, the agent should report:

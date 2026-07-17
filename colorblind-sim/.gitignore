@@ -1,0 +1,16 @@
+# Python caches / test debris
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Local scratch (never commit skill-run deliverables here)
+tmp/
+agentResults/
+
+# macOS
+.DS_Store
+._*

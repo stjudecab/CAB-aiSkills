@@ -27,6 +27,7 @@
 | [custom-ES-plot-GSEApy](custom-ES-plot-GSEApy/README.md) | Wojciech Rosikiewicz | `plotGseapyPrerankEnrichment.py`, `broadGseaInput.py` | Copyright Wojciech Rosikiewicz && St Jude (see script headers) |
 | [genomic-regions-annotation](genomic-regions-annotation/README.md) | Hasan Al Reza; Wojciech Rosikiewicz | `run_genomic_regions_annotation.py`, `voom2anno.sh`, `annotateGenomicFeatures.py`, `OrganizeAnnotationResults.py`, `BEDinContext.py`, `prepare_chromatin_model.py`, `plot_chromatin_state_heatmap.py` | Skill packaging: Hasan Al Reza && Wojciech Rosikiewicz && St Jude. Script headers: Hasan Al Reza (`run_genomic_regions_annotation.py`); Beisi Xu (`voom2anno.sh` and related helpers); Wojciech Rosikiewicz (`annotateGenomicFeatures.py`, `OrganizeAnnotationResults.py`, chromatin-state scripts) — see in-file notices |
 | [genomic-set-analysis](genomic-set-analysis/README.md) | Wojciech Rosikiewicz | `intervene_peaks_combine.py`, `expression_summary.py` | Copyright Wojciech Rosikiewicz && St Jude (see script headers) |
+| [colorblind-sim](colorblind-sim/README.md) | Wojciech Rosikiewicz | `run_colorblind_sim.py`, `convert_to_png.py`, `run_logging.py` | Copyright Wojciech Rosikiewicz && St Jude (see script headers); method credit → CBviz / colorspacious |
 
 ---
 
@@ -61,6 +62,7 @@ When describing **how results were computed** in a paper, grant, or methods sect
 | [custom-ES-plot-GSEApy](custom-ES-plot-GSEApy/references/citations.md) | **GSEA** — Subramanian et al., *PNAS* 2005; **GSEApy** — Fang et al., *Bioinformatics* 2022 ([doi:10.1093/bioinformatics/btac757](https://doi.org/10.1093/bioinformatics/btac757)) |
 | [genomic-regions-annotation](genomic-regions-annotation/references/citations.md) | **CAB/St Jude genomic region annotation workflow** — credit bundled scripts per file headers and report the genome build / annotation resources used |
 | [genomic-set-analysis](genomic-set-analysis/references/citations.md) | **Intervene** — Khan & Mathelier, *BMC Bioinformatics* 2017 ([doi:10.1186/s12859-017-1708-7](https://doi.org/10.1186/s12859-017-1708-7)); **BEDTools** — Quinlan & Hall, *Bioinformatics* 2010 |
+| [colorblind-sim](colorblind-sim/references/citations.md) | **CBviz** — Flynn, GitHub ([wflynny/cbviz](https://github.com/wflynny/cbviz)); **colorspacious** — Smith et al. ([docs](https://colorspacious.readthedocs.io/)) |
 
 Per-skill copy-paste examples: each skill’s `references/citations.md` and README **Citation** section.
 

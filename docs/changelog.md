@@ -2,6 +2,14 @@
 
 Newest entries first.
 
+## 2026-07-16
+
+- Added **`colorblind-sim`** skill: wraps upstream **CBviz** to simulate figure appearance under color vision deficiency (protanopia, deuteranopia, tritanopia, monochrome).
+- Persistent reusable **venv** via `scripts/ensure_env.sh` at `~/.cache/cursor-skills/colorblind-sim/venv/` (`requirements.txt` with Pillow, PyMuPDF, commit-pinned CBviz).
+- Main CLI `run_colorblind_sim.py` (default `cbviz-fast` grid) plus `convert_to_png.py` for PDF→PNG; SVG/EPS via host `rsvg-convert` or `inkscape` when available.
+- Full run audit trail (`run_metadata.json`, `logs/`, agent request/workflow artifacts) per AGENTS.md.
+- Bundled references, evaluation prompts, demo PNG, pytest suite; updated README, AUTHORS, and attribution docs.
+
 ## 2026-07-14
 
 - **`genomic-set-analysis`**: Synced pairwise significance with in-house `IntervenePeaksCombine`: **fold enrichment** (\(a/(|A||B|/N)\)), **expected overlap**, **enrichment direction**, raw-FE clustermap (not log2), and **`--pairwiseSignificanceUniverse`** (`auto`/`-1` or a positive integer). Updated evaluation prompts for manual universe size. Docs and tests updated.
