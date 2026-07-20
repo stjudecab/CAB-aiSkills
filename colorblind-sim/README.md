@@ -42,6 +42,22 @@ python scripts/run_colorblind_sim.py \
   --runId RUNID
 ```
 
+### Example output
+
+The default `fast` mode produces a four-panel comparison of the original figure
+with protanopia, deuteranopia, and tritanopia simulations. The example below was
+generated at severity 100; select it to view the full-resolution image.
+
+<p align="center">
+  <a href="examples/cb7v2.cbviz.png">
+    <img src="examples/cb7v2.cbviz.png" alt="CBviz comparison showing the original Ishihara-style plate and protanopia, deuteranopia, and tritanopia simulations" width="480" />
+  </a>
+</p>
+
+This output is an accessibility preview rather than a clinical diagnosis. See
+[the methods reference](references/methods.md) for simulation details and
+limitations.
+
 PDF input (auto-converts page 1 to PNG under `prepared/`):
 
 ```bash
@@ -74,6 +90,7 @@ SVG/EPS require host **`rsvg-convert`** or **`inkscape`** on `PATH`.
 | [scripts/ensure_env.sh](scripts/ensure_env.sh) | Persistent venv |
 | [references/](references/) | Formats, methods, citations |
 | [examples/demo.png](examples/demo.png) | Smoke-test figure |
+| [examples/cb7v2.cbviz.png](examples/cb7v2.cbviz.png) | Example four-panel CVD simulation |
 | [tests/](tests/) | Pytest suite |
 
 ## Testing

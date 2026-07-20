@@ -2,6 +2,12 @@
 
 Newest entries first.
 
+## 2026-07-20
+
+- Added a compact, clickable CBviz output example to the **`colorblind-sim`** README, showing the original figure alongside severity-100 protanopia, deuteranopia, and tritanopia simulations.
+- Stored the full-resolution example under `colorblind-sim/examples/` while constraining its rendered README width for readability.
+- Ignored generated `*.tss.clean` annotation intermediates repository-wide so genomic-region annotation runs do not appear as untracked source changes.
+
 ## 2026-07-16
 
 - Added **`colorblind-sim`** skill: wraps upstream **CBviz** to simulate figure appearance under color vision deficiency (protanopia, deuteranopia, tritanopia, monochrome).

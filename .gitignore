@@ -40,6 +40,7 @@ Thumbs.db
 
 # Run artifacts from skill scripts (regenerated locally)
 *.log
+*.tss.clean
 agentResults/
 
 # Jupyter (if used for exploration)
