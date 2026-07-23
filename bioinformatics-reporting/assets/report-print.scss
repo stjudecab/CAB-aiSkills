@@ -1,0 +1,7 @@
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{Bioinformatics Analysis Report}
+\fancyhead[R]{\today}

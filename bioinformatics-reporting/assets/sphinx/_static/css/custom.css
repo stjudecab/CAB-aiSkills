@@ -1,0 +1,9 @@
+/* CAB bioinformatics-reporting Sphinx overrides (RTD theme). */
+.wy-table-responsive table td {
+  white-space: normal;
+}
+
+.table-note {
+  font-size: 0.9em;
+  color: #555;
+}

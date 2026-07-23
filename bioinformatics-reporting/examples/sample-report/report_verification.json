@@ -1,0 +1,49 @@
+{
+  "valid": true,
+  "errors": [],
+  "warnings": [
+    "HTML references PDF download link but PDF was not requested: bioinformatics-report.pdf"
+  ],
+  "deliverables": {
+    "qmd": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/bioinformatics-report.qmd",
+    "html": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/bioinformatics-report.html",
+    "pdf": null,
+    "pdf_page_count": 0,
+    "pdf_pages": []
+  },
+  "staged_artifact_count": 2,
+  "metrics_without_provenance": 0,
+  "render": {
+    "outputs": [
+      "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/bioinformatics-report.html"
+    ],
+    "warnings": [],
+    "builds": [
+      {
+        "format": "html",
+        "returncode": 0,
+        "log": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/logs/quarto_render_html.log"
+      }
+    ],
+    "pdf_engine": "pdflatex",
+    "quarto": "/home/wrosikie/programs/miniforge3/bin/quarto",
+    "qmd": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/bioinformatics-report.qmd",
+    "staged": [
+      {
+        "source": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/tests/fixtures/multi_module/rnaseq_deg.tsv",
+        "destination": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/tables/rnaseq_deg.tsv",
+        "report_path": "tables/rnaseq_deg.tsv",
+        "sha256": "8946a009380ff744f4f431001e75b0fd4fdcc8af7ff5f05bcceac79f9af021da",
+        "role": "differential_expression"
+      },
+      {
+        "source": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/tests/fixtures/multi_module/atac_da.tsv",
+        "destination": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/tables/atac_da.tsv",
+        "report_path": "tables/atac_da.tsv",
+        "sha256": "32e7cf024dea798e2ec47d02a5f03c1bd35775e5344451c992a96e66082f5143",
+        "role": "differential_accessibility"
+      }
+    ]
+  },
+  "verified_at": "2026-07-22T18:03:59.924561+00:00"
+}

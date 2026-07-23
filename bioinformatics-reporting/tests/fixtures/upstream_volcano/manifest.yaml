@@ -1,0 +1,21 @@
+schema_version: "1.0"
+
+study:
+  title: "Volcano grid outputs without genome metadata"
+  description: "Synthetic fixture with upstream volcano-grid-plot run metadata"
+
+analyses:
+  - id: "volcano_panels"
+    type: "visualization"
+    title: "Volcano grid panels"
+    parameters:
+      fdr_threshold: 0.05
+      absolute_log2_fold_change_threshold: 2.0
+    artifacts:
+      - path: "../figures/volcano.png"
+        role: "volcano_plot"
+        format: "png"
+
+provenance:
+  pipeline: "volcano-grid-plot"
+  skill: "volcano-grid-plot"

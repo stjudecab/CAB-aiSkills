@@ -1,0 +1,49 @@
+---
+title: "{{REPORT_TITLE}}"
+subtitle: "Reproducible bioinformatics analysis report"
+author: "CAB-aiSkills bioinformatics-reporting"
+date: "{{GENERATED_AT}}"
+format:
+  html:
+    theme:
+      - report-theme.scss
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    embed-resources: true
+    self-contained: true
+  pdf:
+    documentclass: scrartcl
+    papersize: letter
+    geometry:
+      - margin=1in
+    include-in-header:
+      - report-print.scss
+    toc: true
+    number-sections: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Executive summary
+
+This Quarto source is generated from `report-model.json`. The agent should
+revise narrative sections using evidence from that model before final delivery.
+Do not invent statistics, thresholds, or software versions not present in the model.
+
+## Study overview
+
+See the rendered HTML/PDF for the populated study overview, QC, primary results,
+functional interpretation, warnings, methods, and provenance sections.
+
+## Reproducibility
+
+- Report model: `report-model.json`
+- Deliverable manifest: `report-manifest.yaml`
+- Generated at: {{GENERATED_AT}}
+
+## Appendix
+
+Linked tables and figures are copied under `artifacts/` during rendering.

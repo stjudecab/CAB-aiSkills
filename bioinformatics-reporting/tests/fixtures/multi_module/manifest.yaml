@@ -1,0 +1,28 @@
+schema_version: "1.0"
+study:
+  title: "Multi-module synthetic report"
+analyses:
+  - id: "rna"
+    type: "differential_expression"
+    title: "RNA-seq"
+    comparison:
+      numerator: "treated"
+      denominator: "control"
+    parameters:
+      fdr_threshold: 0.05
+    artifacts:
+      - path: "rnaseq_deg.tsv"
+        role: "differential_expression"
+        format: "tsv"
+  - id: "atac"
+    type: "differential_accessibility"
+    title: "ATAC-seq"
+    comparison:
+      numerator: "treated"
+      denominator: "control"
+    parameters:
+      fdr_threshold: 0.05
+    artifacts:
+      - path: "atac_da.tsv"
+        role: "differential_accessibility"
+        format: "tsv"

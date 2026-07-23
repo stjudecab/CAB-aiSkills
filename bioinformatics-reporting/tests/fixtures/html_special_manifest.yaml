@@ -1,0 +1,13 @@
+schema_version: "1.0"
+study:
+  title: "HTML escaping fixture"
+analyses:
+  - id: "html"
+    type: "differential_expression"
+    title: "HTML special characters"
+    parameters:
+      fdr_threshold: 0.05
+    artifacts:
+      - path: "html_special/results.tsv"
+        role: "primary_results"
+        format: "tsv"

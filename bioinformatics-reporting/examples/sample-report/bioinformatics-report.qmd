@@ -1,0 +1,115 @@
+---
+title: "Multi-module synthetic report"
+subtitle: ""
+author: "Automated bioinformatics report"
+date: "2026-07-22"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    theme: report.scss
+    embed-resources: true
+    df-print: paged
+  pdf:
+    documentclass: article
+    papersize: letter
+    geometry:
+      - margin=0.85in
+    toc: true
+    number-sections: true
+    include-in-header:
+      text: |
+        \usepackage{float}
+        \usepackage{booktabs}
+        \usepackage{longtable}
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{=html}
+<div class="report-banner">
+  <div class="summary-grid">
+    <div class="summary-card"><div class="label">Analyses</div><div class="value">2</div></div><div class="summary-card"><div class="label">Figures</div><div class="value">0</div></div><div class="summary-card"><div class="label">Tables</div><div class="value">2</div></div><div class="summary-card"><div class="label">Genome build</div><div class="value">Not specified</div></div>
+  </div>
+</div>
+```
+
+## Executive summary
+
+This report summarizes **existing** outputs for **Multi-module synthetic report**. No primary differential, enrichment, or overlap statistics were recomputed for this document.
+
+**Key observations (from result files):**
+- **Number of features with a testable significance value:** 2
+- **Number of features passing supplied thresholds:** 2
+- **Upregulated significant features:** 1
+- **Downregulated significant features:** 1
+- **Number of features with a testable significance value:** 1
+- **Number of features passing supplied thresholds:** 1
+- **Upregulated significant features:** 1
+- **Downregulated significant features:** 0
+
+::: {.callout-warning title="Interpretation boundaries"}
+Statistical enrichment and overlap results indicate co-occurrence with annotated collections. They do **not** demonstrate pathway activation, causal regulation, or direction of effect unless supported by separate differential evidence with explicit comparison direction.
+:::
+
+## Analysis overview
+
+| ID | Type | Title | Comparison | FDR threshold |
+| --- | --- | --- | --- | --- |
+| rna | differential_expression | RNA-seq | treated vs control | 0.05 |
+| atac | differential_accessibility | ATAC-seq | treated vs control | 0.05 |
+
+## Methods
+
+_Methods were not fully documented in the supplied manifest or run metadata. Inspect `run_metadata.json` files in the source results directory._
+
+## Result validation and quality checks
+
+| Check | Status | Notes |
+| --- | --- | --- |
+| Manifest validation | Pass | No fatal errors |
+| Warnings recorded | 2 | See limitations section |
+| Metrics with provenance | 8 | Computed from supplied tables only |
+
+## Principal results — figures
+
+_No figures were staged for this report._
+
+## Principal results — tables
+
+### differential expression
+
+| gene | log2FoldChange | padj |
+| --- | --- | --- |
+| GENE_1 | 1.2 | 0.01 |
+| GENE_2 | -0.9 | 0.04 |
+
+[Download full table](tables/rnaseq_deg.tsv)
+
+### differential accessibility
+
+| peak | log2FoldChange | padj |
+| --- | --- | --- |
+| peak_a | 2.0 | 0.002 |
+
+[Download full table](tables/atac_da.tsv)
+
+
+## Biological themes
+
+_No agent-authored biological themes were supplied. Interpret tables and figures cautiously._
+
+## Limitations and warnings
+
+- Study genome build not specified.
+- Provenance block missing.
+
+## Provenance appendix
+
+| Artifact | Role | Format |
+| -------- | ---- | ------ |
+| `rnaseq_deg.tsv` | differential_expression | tsv |
+| `atac_da.tsv` | differential_accessibility | tsv |

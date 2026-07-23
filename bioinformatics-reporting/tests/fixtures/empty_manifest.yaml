@@ -1,0 +1,15 @@
+schema_version: "1.0"
+study:
+  title: "Empty results fixture"
+analyses:
+  - id: "empty"
+    type: "differential_expression"
+    title: "Empty DE table"
+    parameters:
+      fdr_threshold: 0.05
+    artifacts:
+      - path: "empty_results.tsv"
+        role: "primary_results"
+        format: "tsv"
+warnings:
+  - "Primary differential table contains zero data rows."

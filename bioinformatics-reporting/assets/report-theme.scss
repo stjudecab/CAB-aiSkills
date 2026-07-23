@@ -1,0 +1,30 @@
+/* Quarto HTML theme overrides for bioinformatics-reporting */
+/*$primary: #17365D;*/
+/*$link-color: #267F8E;*/
+
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color: #1f2933;
+}
+
+h1, h2, h3, h4 {
+  color: #17365D;
+}
+
+.callout-warning {
+  border-left-color: #c97706;
+}
+
+.callout-note {
+  border-left-color: #267F8E;
+}
+
+table {
+  font-size: 0.92rem;
+}
+
+@media print {
+  .page-break {
+    break-before: page;
+  }
+}

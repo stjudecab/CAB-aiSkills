@@ -1,0 +1,3 @@
+gene	log2FoldChange	padj
+GENE_1	1.2	0.01
+GENE_2	-0.9	0.04

@@ -2,6 +2,13 @@
 
 Newest entries first.
 
+## 2026-07-22
+
+- Added **`bioinformatics-reporting`** skill: Quarto-first standalone reporting from existing bioinformatics result directories (RNA-seq, ATAC-seq, ChIP-seq, CUT&RUN/CUT&Tag, methylation, differential/enrichment/overlap/QC, multi-omics collections).
+- Ships discovery, manifest validation, batch profiling, artifact staging with SHA-256 checksums, provenance-backed report-model assembly, Quarto HTML/PDF rendering, and `report_verification.json` as the authoritative verification record.
+- Persistent reusable **venv** via `scripts/ensure_env.sh` at `~/.cache/cursor-skills/bioinformatics-reporting/venv/` (`pandas`, `PyYAML`, `Pillow`, `Jinja2`; host Quarto + pdflatex for PDF).
+- Bundled references, SCSS theme, pytest fixtures/evaluation prompts, and sanitized multi-module smoke fixtures; updated README, AUTHORS, and attribution docs.
+
 ## 2026-07-20
 
 - Added a compact, clickable CBviz output example to the **`colorblind-sim`** README, showing the original figure alongside severity-100 protanopia, deuteranopia, and tritanopia simulations.

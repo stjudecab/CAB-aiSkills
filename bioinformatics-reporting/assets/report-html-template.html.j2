@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ title }}</title>
+  <style>
+    :root {
+      --primary: {{ primary_color }};
+      --accent: {{ accent_color }};
+      --warning: #c97706;
+      --danger: #b42318;
+      --bg: #f7f9fb;
+      --text: #1f2933;
+      --muted: #52606d;
+      --card: #ffffff;
+      --border: #d9e2ec;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.55;
+    }
+    header.report-header {
+      background: linear-gradient(135deg, var(--primary), #0f2744);
+      color: #fff;
+      padding: 2.5rem 1.5rem 2rem;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .header-brand svg {
+      width: 220px;
+      max-width: 42vw;
+      height: auto;
+      display: block;
+    }
+    header.report-header h1 { margin: 0 0 0.5rem; font-size: 2rem; }
+    header.report-header .subtitle { opacity: 0.92; max-width: 60rem; }
+    header.report-header .meta { margin-top: 1rem; font-size: 0.92rem; opacity: 0.85; }
+    nav.toc {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.5rem;
+      z-index: 10;
+    }
+    nav.toc a {
+      color: var(--primary);
+      margin-right: 1rem;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    h2, h3, h4 { color: var(--primary); }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: #eef7f8;
+      padding: 0.85rem 1rem;
+      margin: 1rem 0;
+    }
+    .callout.warning {
+      border-left-color: var(--warning);
+      background: #fff7e6;
+    }
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+    .metric-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem;
+      background: #fff;
+    }
+    .metric-value { font-size: 1.6rem; font-weight: 700; color: var(--primary); }
+    .metric-label { font-size: 0.92rem; }
+    .metric-source { font-size: 0.8rem; color: var(--muted); margin-top: 0.35rem; }
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.55rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #edf2f7; }
+    .report-figure img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    figcaption { font-size: 0.9rem; color: var(--muted); margin-top: 0.35rem; }
+    .method-block { margin-bottom: 1rem; }
+    .method-meta { color: var(--muted); font-size: 0.9rem; margin-top: -0.25rem; }
+    .genome-note { color: var(--muted); font-size: 0.92rem; }
+    footer {
+      max-width: 1100px;
+      margin: 0 auto 2rem;
+      padding: 0 1.5rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    @media print {
+      nav.toc { position: static; }
+      section { break-inside: avoid-page; }
+    }
+  </style>
+</head>
+<body>
+  <header class="report-header">
+    {% if logo_svg %}
+    <div class="header-brand">{{ logo_svg | safe }}</div>
+    {% endif %}
+    <h1>{{ title }}</h1>
+    {% if subtitle %}<div class="subtitle">{{ subtitle }}</div>{% endif %}
+    <div class="meta">
+      {% if author %}Author: {{ author }} · {% endif %}
+      {% if organization %}Organization: {{ organization }} · {% endif %}
+      Generated: {{ generated_at }}
+    </div>
+  </header>
+
+  <nav class="toc">
+    <a href="#summary">Summary</a>
+    <a href="#study">Study</a>
+    <a href="#results">Results</a>
+    <a href="#warnings">Warnings</a>
+    <a href="#methods">Methods</a>
+    <a href="#provenance">Provenance</a>
+  </nav>
+
+  <main>
+    <section id="summary">
+      <h2>Executive summary</h2>
+      <p>{{ executive_summary or "No executive summary was supplied in the manifest." }}</p>
+    </section>
+
+    <section id="study">
+      <h2>Study design and sample overview</h2>
+      <p><strong>Organism:</strong> {{ organism or "Not specified" }}</p>
+      <p><strong>Genome build:</strong> {{ genome }}</p>
+      {% if genome_status in ["not_required", "not_required_for_report"] %}
+      <p class="genome-note">This label reflects upstream skill requirements for the summarized outputs, not a QC failure.</p>
+      {% endif %}
+      {% if study_description %}<p>{{ study_description }}</p>{% endif %}
+    </section>
+
+    <section id="results">
+      <h2>Analysis results</h2>
+      {{ analyses_html | safe }}
+    </section>
+
+    <section id="warnings">
+      <h2>Warnings, limitations, and unresolved questions</h2>
+      {{ warnings_html | safe }}
+      {{ limitations_html | safe }}
+    </section>
+
+    <section id="methods">
+      <h2>Methods and analysis parameters</h2>
+      {{ methods_html | safe }}
+      {{ critical_inputs_html | safe }}
+    </section>
+
+    <section id="provenance">
+      <h2>Software versions and provenance</h2>
+      <p><strong>Pipeline:</strong> {{ pipeline or "Not specified" }}
+      {% if pipeline_version %} (version {{ pipeline_version }}){% endif %}</p>
+      {% if provenance_generated_at %}<p><strong>Upstream generated at:</strong> {{ provenance_generated_at }}</p>{% endif %}
+      {% if software_rows %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Software</th><th>Version</th></tr></thead>
+          <tbody>{{ software_rows | safe }}</tbody>
+        </table>
+      </div>
+      {% endif %}
+    </section>
+  </main>
+
+  <footer>
+    Report generated by CAB-aiSkills bioinformatics-reporting. All numeric claims should trace to report-model.json or linked artifacts.
+  </footer>
+</body>
+</html>

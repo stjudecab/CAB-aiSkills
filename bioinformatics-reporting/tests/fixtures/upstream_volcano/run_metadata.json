@@ -1,0 +1,22 @@
+{
+  "skill": "volcano-grid-plot",
+  "script": "volcano_ma_grid.py",
+  "run_id": "20260722T120000Z",
+  "timestamp_utc": "2026-07-22T12:00:00+00:00",
+  "parameters": {
+    "fcCut": 2,
+    "fdrCut": 0.05
+  },
+  "tool_versions": {
+    "python": "3.11.11",
+    "pandas": "2.3.3",
+    "matplotlib": "3.11.0"
+  },
+  "outputs": [
+    "volcanoGrid.pdf"
+  ],
+  "attribution": {
+    "method": "Multi-panel Volcano and MA plot grids from differential-analysis tables",
+    "skill_package": "CAB-aiSkills volcano-grid-plot"
+  }
+}

@@ -42,6 +42,7 @@ Thumbs.db
 *.log
 *.tss.clean
 agentResults/
+tmp/
 
 # Jupyter (if used for exploration)
 .ipynb_checkpoints/

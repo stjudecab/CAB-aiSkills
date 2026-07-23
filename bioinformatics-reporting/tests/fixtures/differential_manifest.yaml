@@ -1,0 +1,56 @@
+schema_version: "1.0"
+
+study:
+  title: "Synthetic ATAC-seq differential accessibility report"
+  description: "Treated versus control accessibility comparison (synthetic fixture)"
+  genome: "hg38"
+  organism: "Homo sapiens"
+
+samples:
+  metadata: "samples.tsv"
+  sample_id_column: "sample_id"
+  group_column: "condition"
+
+analyses:
+  - id: "atac_treated_vs_control"
+    type: "differential_accessibility"
+    title: "Treated versus control"
+    comparison:
+      numerator: "treated"
+      denominator: "control"
+    parameters:
+      fdr_threshold: 0.05
+      absolute_log2_fold_change_threshold: 1.0
+    warnings:
+      - "One treated replicate had a lower FRiP score."
+    artifacts:
+      - path: "results/differential_peaks.tsv"
+        role: "primary_results"
+        format: "tsv"
+        description: "Differentially accessible regions"
+      - path: "figures/pca.png"
+        role: "sample_qc"
+        format: "png"
+        description: "PCA of normalized accessibility"
+      - path: "figures/volcano.png"
+        role: "volcano_plot"
+        format: "png"
+      - path: "results/pathway_enrichment.tsv"
+        role: "pathway_enrichment"
+        format: "tsv"
+        description: "Pathway enrichment results"
+
+provenance:
+  pipeline: "Synthetic ATAC-seq fixture pipeline"
+  pipeline_version: "0.1.0"
+  generated_at: "2026-07-22"
+  software:
+    - name: "DESeq2"
+      version: "1.44.0"
+
+report:
+  title: "Synthetic ATAC-seq Report"
+  primary_color: "#17365D"
+  accent_color: "#267F8E"
+  self_contained_html: true
+  render_pdf: true

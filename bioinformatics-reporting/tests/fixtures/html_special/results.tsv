@@ -1,0 +1,2 @@
+gene	note	padj	log2FoldChange
+<script>alert(1)</script>	"a & b"	0.01	1.2

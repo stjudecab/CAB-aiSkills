@@ -1,0 +1,57 @@
+{
+  "skill": "bioinformatics-reporting",
+  "script": "render_report.py",
+  "run_id": "20260722T180356Z",
+  "timestamp_utc": "2026-07-22T18:03:59.957153+00:00",
+  "command": "python scripts/render_report.py --manifest tests/fixtures/multi_module/manifest.yaml --outputDir /home/wrosikie/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report --baseDir tests/fixtures/multi_module --formats html",
+  "working_directory": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting",
+  "inputs": [
+    {
+      "path": "tests/fixtures/multi_module/manifest.yaml",
+      "label": "report input"
+    }
+  ],
+  "output_directory": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report",
+  "output_prefix": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report",
+  "parameters": {
+    "formats": [
+      "html"
+    ],
+    "baseDir": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/tests/fixtures/multi_module",
+    "narrative": null
+  },
+  "tool_versions": {
+    "python": "3.11.11",
+    "python_full": "3.11.11 (main, Dec  9 2024, 15:32:27) [GCC 8.5.0 20210514 (Red Hat 8.5.0-22)]",
+    "pandas": "2.3.3",
+    "pyyaml": "6.0.3",
+    "script_dir": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting",
+    "quarto": "1.9.38",
+    "pdf_engine": "pdflatex"
+  },
+  "summary": {
+    "html": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/bioinformatics-report.html",
+    "pdf": null,
+    "qmd": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/bioinformatics-report.qmd",
+    "verification_valid": true,
+    "pdf_engine": "pdflatex",
+    "staged_artifact_count": 2
+  },
+  "outputs": [
+    "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/bioinformatics-report.html",
+    "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/bioinformatics-report.qmd",
+    "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/report_verification.json",
+    "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/report_manifest.yaml"
+  ],
+  "agent_request_file": null,
+  "agent_workflow_file": null,
+  "logs": {
+    "render_report.log": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/logs/render_report.log",
+    "commands.log": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/logs/commands.log"
+  },
+  "attribution": {
+    "method": "Quarto QMD source + HTML/PDF rendering with portable staged artifacts",
+    "skill_package": "bioinformatics-reporting render_report.py",
+    "note": "Scientific narrative must remain traceable to report-model.json metrics."
+  }
+}

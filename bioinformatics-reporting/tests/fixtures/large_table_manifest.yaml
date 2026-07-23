@@ -1,0 +1,14 @@
+schema_version: "1.0"
+study:
+  title: "Large table fixture"
+analyses:
+  - id: "large"
+    type: "differential_expression"
+    title: "Large DE table"
+    parameters:
+      fdr_threshold: 0.05
+      absolute_log2_fold_change_threshold: 1.0
+    artifacts:
+      - path: "large_table.tsv"
+        role: "primary_results"
+        format: "tsv"

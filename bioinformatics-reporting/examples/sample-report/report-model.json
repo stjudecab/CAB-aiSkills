@@ -1,0 +1,368 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-22T18:03:56.631238+00:00",
+  "study": {
+    "title": "Multi-module synthetic report"
+  },
+  "study_display": {
+    "genome_build": "Not specified",
+    "genome_build_status": "unknown"
+  },
+  "samples": {},
+  "report_config": {
+    "title": "Multi-module synthetic report",
+    "subtitle": null,
+    "author": null,
+    "organization": null,
+    "logo": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/assets/CAB-aiSkills_bioinformatics-reporting.white.svg",
+    "primary_color": "#17365D",
+    "accent_color": "#267F8E",
+    "include_toc": true,
+    "self_contained_html": true,
+    "render_pdf": true
+  },
+  "upstream_skills": {
+    "search_paths": [
+      "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills",
+      "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/.cursor/skills"
+    ],
+    "detected_skills": []
+  },
+  "analyses": [
+    {
+      "id": "rna",
+      "type": "differential_expression",
+      "title": "RNA-seq",
+      "comparison": {
+        "numerator": "treated",
+        "denominator": "control"
+      },
+      "parameters": {
+        "fdr_threshold": 0.05
+      },
+      "warnings": [],
+      "artifacts": [
+        {
+          "path": "rnaseq_deg.tsv",
+          "resolved_path": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/tests/fixtures/multi_module/rnaseq_deg.tsv",
+          "role": "differential_expression",
+          "format": "tsv",
+          "description": null,
+          "confidence": "explicit",
+          "exists": true
+        }
+      ],
+      "summaries": {
+        "significance": {
+          "tested_features": {
+            "value": 2,
+            "description": "Number of features with a testable significance value",
+            "source_artifact": "rnaseq_deg.tsv",
+            "calculation": "non-null padj",
+            "columns": [
+              "padj"
+            ]
+          },
+          "significant_features": {
+            "value": 2,
+            "description": "Number of features passing supplied thresholds",
+            "source_artifact": "rnaseq_deg.tsv",
+            "calculation": "padj < 0.05",
+            "columns": [
+              "padj"
+            ]
+          },
+          "upregulated_features": {
+            "value": 1,
+            "description": "Upregulated significant features",
+            "source_artifact": "rnaseq_deg.tsv",
+            "calculation": "log2FoldChange > 0 with thresholds",
+            "columns": [
+              "padj"
+            ]
+          },
+          "downregulated_features": {
+            "value": 1,
+            "description": "Downregulated significant features",
+            "source_artifact": "rnaseq_deg.tsv",
+            "calculation": "log2FoldChange < 0 with thresholds",
+            "columns": [
+              "padj"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "atac",
+      "type": "differential_accessibility",
+      "title": "ATAC-seq",
+      "comparison": {
+        "numerator": "treated",
+        "denominator": "control"
+      },
+      "parameters": {
+        "fdr_threshold": 0.05
+      },
+      "warnings": [],
+      "artifacts": [
+        {
+          "path": "atac_da.tsv",
+          "resolved_path": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/tests/fixtures/multi_module/atac_da.tsv",
+          "role": "differential_accessibility",
+          "format": "tsv",
+          "description": null,
+          "confidence": "explicit",
+          "exists": true
+        }
+      ],
+      "summaries": {
+        "significance": {
+          "tested_features": {
+            "value": 1,
+            "description": "Number of features with a testable significance value",
+            "source_artifact": "atac_da.tsv",
+            "calculation": "non-null padj",
+            "columns": [
+              "padj"
+            ]
+          },
+          "significant_features": {
+            "value": 1,
+            "description": "Number of features passing supplied thresholds",
+            "source_artifact": "atac_da.tsv",
+            "calculation": "padj < 0.05",
+            "columns": [
+              "padj"
+            ]
+          },
+          "upregulated_features": {
+            "value": 1,
+            "description": "Upregulated significant features",
+            "source_artifact": "atac_da.tsv",
+            "calculation": "log2FoldChange > 0 with thresholds",
+            "columns": [
+              "padj"
+            ]
+          },
+          "downregulated_features": {
+            "value": 0,
+            "description": "Downregulated significant features",
+            "source_artifact": "atac_da.tsv",
+            "calculation": "log2FoldChange < 0 with thresholds",
+            "columns": [
+              "padj"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "figures": [],
+  "tables": [
+    {
+      "analysis_id": "rna",
+      "role": "differential_expression",
+      "path": "rnaseq_deg.tsv",
+      "description": "differential expression",
+      "profile": {
+        "path": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/tests/fixtures/multi_module/rnaseq_deg.tsv",
+        "format": "tsv",
+        "readable": true,
+        "row_count": 2,
+        "column_count": 3,
+        "columns": [
+          "gene",
+          "log2FoldChange",
+          "padj"
+        ],
+        "semantic_columns": {
+          "identifier": "gene",
+          "log2fc": "log2FoldChange",
+          "significance": "padj"
+        },
+        "missing_values": {
+          "gene": 0,
+          "log2FoldChange": 0,
+          "padj": 0
+        },
+        "value_ranges": {
+          "log2FoldChange": {
+            "min": -0.9,
+            "max": 1.2
+          },
+          "padj": {
+            "min": 0.01,
+            "max": 0.04
+          }
+        },
+        "preview": {
+          "rows": [
+            {
+              "gene": "GENE_1",
+              "log2FoldChange": "1.2",
+              "padj": "0.01"
+            },
+            {
+              "gene": "GENE_2",
+              "log2FoldChange": "-0.9",
+              "padj": "0.04"
+            }
+          ],
+          "selection": "first 20 rows after header"
+        },
+        "warnings": []
+      },
+      "download_path": "rnaseq_deg.tsv"
+    },
+    {
+      "analysis_id": "atac",
+      "role": "differential_accessibility",
+      "path": "atac_da.tsv",
+      "description": "differential accessibility",
+      "profile": {
+        "path": "/research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/tests/fixtures/multi_module/atac_da.tsv",
+        "format": "tsv",
+        "readable": true,
+        "row_count": 1,
+        "column_count": 3,
+        "columns": [
+          "peak",
+          "log2FoldChange",
+          "padj"
+        ],
+        "semantic_columns": {
+          "log2fc": "log2FoldChange",
+          "significance": "padj"
+        },
+        "missing_values": {
+          "peak": 0,
+          "log2FoldChange": 0,
+          "padj": 0
+        },
+        "value_ranges": {
+          "log2FoldChange": {
+            "min": 2.0,
+            "max": 2.0
+          },
+          "padj": {
+            "min": 0.002,
+            "max": 0.002
+          }
+        },
+        "preview": {
+          "rows": [
+            {
+              "peak": "peak_a",
+              "log2FoldChange": "2.0",
+              "padj": "0.002"
+            }
+          ],
+          "selection": "first 20 rows after header"
+        },
+        "warnings": []
+      },
+      "download_path": "atac_da.tsv"
+    }
+  ],
+  "metrics": [
+    {
+      "value": 2,
+      "description": "Number of features with a testable significance value",
+      "source_artifact": "rnaseq_deg.tsv",
+      "calculation": "non-null padj",
+      "columns": [
+        "padj"
+      ]
+    },
+    {
+      "value": 2,
+      "description": "Number of features passing supplied thresholds",
+      "source_artifact": "rnaseq_deg.tsv",
+      "calculation": "padj < 0.05",
+      "columns": [
+        "padj"
+      ]
+    },
+    {
+      "value": 1,
+      "description": "Upregulated significant features",
+      "source_artifact": "rnaseq_deg.tsv",
+      "calculation": "log2FoldChange > 0 with thresholds",
+      "columns": [
+        "padj"
+      ]
+    },
+    {
+      "value": 1,
+      "description": "Downregulated significant features",
+      "source_artifact": "rnaseq_deg.tsv",
+      "calculation": "log2FoldChange < 0 with thresholds",
+      "columns": [
+        "padj"
+      ]
+    },
+    {
+      "value": 1,
+      "description": "Number of features with a testable significance value",
+      "source_artifact": "atac_da.tsv",
+      "calculation": "non-null padj",
+      "columns": [
+        "padj"
+      ]
+    },
+    {
+      "value": 1,
+      "description": "Number of features passing supplied thresholds",
+      "source_artifact": "atac_da.tsv",
+      "calculation": "padj < 0.05",
+      "columns": [
+        "padj"
+      ]
+    },
+    {
+      "value": 1,
+      "description": "Upregulated significant features",
+      "source_artifact": "atac_da.tsv",
+      "calculation": "log2FoldChange > 0 with thresholds",
+      "columns": [
+        "padj"
+      ]
+    },
+    {
+      "value": 0,
+      "description": "Downregulated significant features",
+      "source_artifact": "atac_da.tsv",
+      "calculation": "log2FoldChange < 0 with thresholds",
+      "columns": [
+        "padj"
+      ]
+    }
+  ],
+  "methods": [],
+  "parameters": {
+    "rna": {
+      "fdr_threshold": 0.05
+    },
+    "atac": {
+      "fdr_threshold": 0.05
+    }
+  },
+  "warnings": [
+    "Study genome build not specified.",
+    "Provenance block missing."
+  ],
+  "limitations": [],
+  "provenance": {},
+  "software": [],
+  "versions": [],
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "Study genome build not specified.",
+      "Provenance block missing."
+    ]
+  },
+  "omitted_artifacts": []
+}

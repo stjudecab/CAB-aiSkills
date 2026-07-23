@@ -1,0 +1,13 @@
+interface:
+  display_name: "Bioinformatics reporting"
+  short_description: "Compose evidence-grounded HTML/PDF reports from existing omics and bioinformatics result artifacts."
+  default_prompt: "Use $bioinformatics-reporting to inspect existing results, validate or discover artifacts, build a provenance-backed report model, and render Sphinx HTML plus PDF when pdflatex is available. Never invent findings or software versions."
+
+policy:
+  allow_implicit_invocation: true
+  safety: "Follow Microsoft content policies"
+  copyright: "Avoid generating copyrighted text verbatim"
+  code_changes:
+    - "Prefer small, focused edits"
+    - "Do not revert unrelated user changes"
+    - "Validate changes before finishing"

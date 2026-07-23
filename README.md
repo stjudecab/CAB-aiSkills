@@ -82,6 +82,14 @@ Runs **genomic region annotation and interpretation** for ATAC-seq, ChIP-seq, CU
 
 ---
 
+### [bioinformatics-reporting](bioinformatics-reporting/README.md)
+
+Inspects, validates, and combines **existing** bioinformatics outputs into polished **Quarto HTML/PDF reports** with provenance-backed metrics, portable staged artifacts, and a full audit trail. Supports RNA-seq, ATAC-seq, ChIP-seq, CUT&RUN/CUT&Tag, methylation, differential results, enrichment/GSEA, overlap analysis, QC summaries, and multi-omics result collections.
+
+**Example prompt:** *Create a scientific bioinformatics report from the results in `agentResults/my-analysis-20260709T141453Z`, including overlap plots, enrichment tables, and an evidence-grounded executive summary; write HTML and PDF under `agentResults/`.*
+
+---
+
 ### [colorblind-sim](colorblind-sim/README.md)
 
 Simulates how figures appear under **color vision deficiency (CVD)** using **CBviz** (protanopia, deuteranopia, tritanopia, monochrome). Accepts PNG/JPEG/TIFF directly; converts PDF (and SVG/EPS when host tools are available) to PNG before simulation. Writes multi-panel preview figures plus a full run audit trail.

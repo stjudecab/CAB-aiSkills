@@ -1,0 +1,43 @@
+schema_version: '1.0'
+generated_at: '2026-07-22T18:03:56.631238+00:00'
+study:
+  title: Multi-module synthetic report
+deliverables:
+- /research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/bioinformatics-report.html
+- /research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/bioinformatics-report.qmd
+- /research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/report_verification.json
+artifacts:
+- path: rnaseq_deg.tsv
+  resolved_path: /research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/tests/fixtures/multi_module/rnaseq_deg.tsv
+  role: differential_expression
+  format: tsv
+  description: null
+  confidence: explicit
+  exists: true
+- path: atac_da.tsv
+  resolved_path: /research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/tests/fixtures/multi_module/atac_da.tsv
+  role: differential_accessibility
+  format: tsv
+  description: null
+  confidence: explicit
+  exists: true
+warnings:
+- Study genome build not specified.
+- Provenance block missing.
+software: []
+provenance: {}
+validation:
+  valid: true
+  errors: []
+  warnings:
+  - Study genome build not specified.
+  - Provenance block missing.
+report_model: report-model.json
+report_narrative: report_narrative.yaml
+quarto_source: bioinformatics-report.qmd
+verification: /research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/cpr/skillsCollections/CAB-aiSkills/bioinformatics-reporting/examples/sample-report/report_verification.json
+render_status:
+  valid: true
+  errors: []
+  warnings:
+  - 'HTML references PDF download link but PDF was not requested: bioinformatics-report.pdf'

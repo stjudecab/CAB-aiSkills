@@ -1,0 +1,6 @@
+region	log2FoldChange	padj	baseMean
+peak_1	2.5	0.001	100
+peak_2	-1.8	0.02	80
+peak_3	0.4	0.40	60
+peak_4	3.1	0.0005	120
+peak_5	-2.2	0.008	95
