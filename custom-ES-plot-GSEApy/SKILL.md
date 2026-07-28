@@ -4,7 +4,7 @@ description: >-
   Generates GSEA enrichment score (ES) plots and companion statistics text files
   from saved GSEApy prerank pre_res pickle files or Broad Institute GSEA desktop
   output directories. Supports exact gene-set names, comma-separated lists,
-  .lst/.txt list files, regex patterns such as SOS_peaks.*, allGeneSets, and
+  .lst/.txt list files, regex patterns such as CTCF_peaks.*, allGeneSets, and
   list-only mode via --listOnly. Use when the user asks to plot GSEApy prerank
   enrichment from a pre_res pickle, replot Broad GSEA ES figures from a GSEA
   output directory, running enrichment score figures, list gene sets in a
@@ -138,7 +138,7 @@ Run from the skill root (`scripts/plotGseapyPrerankEnrichment.py`).
 ```bash
 python scripts/plotGseapyPrerankEnrichment.py \
   --inPKL /path/to/GSEApy_prerank.pre_res.RNA.contrast.pkl \
-  --geneSetName SOS_peaks.1bp.c_2p5.g_100.l_300.closest
+  --geneSetName CTCF_peaks.1bp.c_2p5.g_100.l_300.closest
 ```
 
 ### Broad GSEA — one gene set (significant or not)

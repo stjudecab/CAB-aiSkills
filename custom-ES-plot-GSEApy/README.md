@@ -51,7 +51,7 @@ Both modes support the same **`--geneSetName`** selection grammar (exact names, 
 ```bash
 python scripts/plotGseapyPrerankEnrichment.py \
   --inPKL /path/to/GSEApy_prerank.pre_res.RNA.contrast.pkl \
-  --geneSetName SOS_peaks.1bp.c_2p5.g_100.l_300.closest
+  --geneSetName CTCF_peaks.1bp.c_2p5.g_100.l_300.closest
 ```
 
 ## Quick start — Broad GSEA, one gene set
@@ -75,7 +75,7 @@ python scripts/plotGseapyPrerankEnrichment.py \
 ```bash
 python scripts/plotGseapyPrerankEnrichment.py \
   --inPKL /path/to/GSEApy_prerank.pre_res.RNA.contrast.pkl \
-  --geneSetName 'SOS_peaks.*'
+  --geneSetName 'CTCF_peaks.*'
 ```
 
 ## Quick start — list file
@@ -83,7 +83,7 @@ python scripts/plotGseapyPrerankEnrichment.py \
 ```bash
 python scripts/plotGseapyPrerankEnrichment.py \
   --inGseaDir /path/to/48h.GseaPreranked.1781298215614 \
-  --geneSetName examples/gene_sets_sos_peaks.lst
+  --geneSetName examples/gene_sets_ctcf_peaks.lst
 ```
 
 ## Quick start — list gene sets only (no plots)

@@ -1,0 +1,4 @@
+# CTCF peak gene sets (example list file)
+CTCF_peaks.*closest
+CTCF_peaks.*enhancer
+CTCF_peaks.*promoter
