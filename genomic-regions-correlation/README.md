@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/CAB-aiSkills_genomic_regions_correlation.svg" alt="genomic regions annotation skill badge" width="520" />
+</p>
+
 # Genomic Regions Correlation
 
 This skill runs GenometriCorr on two genomic-region BED files and produces reciprocal PDF reports and visualizations for `hg19`, `hg38`, or `mm10`. The operational instructions are in [SKILL.md](SKILL.md).

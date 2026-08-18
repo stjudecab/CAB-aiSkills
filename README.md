@@ -74,11 +74,27 @@ Runs **genomic region annotation and interpretation** for ATAC-seq, ChIP-seq, CU
 
 ---
 
+### [genomic-regions-correlation](genomic-regions-correlation/README.md)
+
+Compares two genomic-region BED files with **GenometriCorr**, producing reciprocal correlation reports and visualizations for `hg19`, `hg38`, or `mm10`. Requires an explicitly stated genome build and supports local or LSF execution.
+
+**Example prompt:** *Compare `gained.bed` and `lost.bed` with GenometriCorr using `hg38`, and write the reports under `agentResults/`.*
+
+---
+
 ### [genomic-set-analysis](genomic-set-analysis/README.md)
 
 **Order-independent overlap** of genomic region sets (ChIP-seq, ATAC-seq, CUT&Tag, CUT&RUN, narrowPeak/broadPeak/BED) or gene sets (GMT) with **Intervene** (Venn / UpSet / pairwise), producing a membership matrix and mutually exclusive per-sector files. Optionally chains the **`genomic-regions-annotation`** skill for nearby-gene annotation and the **`pathway-enrichment-enrichr`** skill for Enrichr pathway enrichment of **both** the intersection sectors and the original inputs, plus gated expression summaries. Requires an explicitly stated genome build for annotation/pathway steps; motif enrichment and deeptools are planned but not yet available.
 
 **Example prompt:** *Overlap the three BED files in `genomic-set-analysis/examples`, annotate against `hg38`, and run pathway enrichment for each intersection and for the original files; write outputs under `agentResults/`.*
+
+---
+
+### [tornado-plots](tornado-plots/README.md)
+
+Generates **deepTools tornado plots and heatmaps** from BED region files and BigWig signal tracks using `computeMatrix reference-point` and `plotHeatmap`. Supports local execution and optional LSF `bsub` submission.
+
+**Example prompt:** *Create a tornado plot from `Empty.Up2FC.Region.bed` and `Empty.Down2FC.Region.bed` using the supplied ChIP-seq BigWig tracks, and save outputs under `agentResults/`.*
 
 ---
 
