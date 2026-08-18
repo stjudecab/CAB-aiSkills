@@ -1,0 +1,13 @@
+interface:
+  display_name: "Tornado plots"
+  short_description: "Create deepTools tornado plots from BED regions and BigWig signal tracks."
+  default_prompt: "Use $tornado-plots to validate BED and BigWig inputs, dry-run the link and plot commands with tornado_anno_env, and run only after confirmation."
+
+policy:
+  allow_implicit_invocation: true
+  safety: "Follow Microsoft content policies"
+  copyright: "Avoid generating copyrighted text verbatim"
+  code_changes:
+    - "Prefer small, focused edits"
+    - "Do not revert unrelated user changes"
+    - "Validate changes before finishing"

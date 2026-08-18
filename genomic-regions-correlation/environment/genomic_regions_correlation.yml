@@ -1,0 +1,17 @@
+name: genomic_regions_correlation
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-base=4.3
+  - r-remotes
+  - r-gdata
+  - r-gplots
+  - r-rcurl
+  - r-ggplot2
+  - bioconductor-genomicranges
+  - bioconductor-rtracklayer
+  - bioconductor-genomicfeatures
+  - bioconductor-txdb.hsapiens.ucsc.hg19.knowngene
+  - bioconductor-txdb.hsapiens.ucsc.hg38.knowngene
+  - bioconductor-txdb.mmusculus.ucsc.mm10.knowngene

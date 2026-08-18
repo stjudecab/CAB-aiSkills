@@ -1,0 +1,13 @@
+interface:
+  display_name: "Genomic regions correlation"
+  short_description: "Compare two BED region sets with GenometriCorr for hg19, hg38, or mm10."
+  default_prompt: "Use $genomic-regions-correlation to validate two BED region sets, confirm the genome build, dry-run GenometriCorr, and execute only when requested."
+
+policy:
+  allow_implicit_invocation: true
+  safety: "Follow Microsoft content policies"
+  copyright: "Avoid generating copyrighted text verbatim"
+  code_changes:
+    - "Prefer small, focused edits"
+    - "Do not revert unrelated user changes"
+    - "Validate changes before finishing"
