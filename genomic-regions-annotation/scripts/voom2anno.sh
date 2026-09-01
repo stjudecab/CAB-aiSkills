@@ -29,7 +29,7 @@ then
     if grep $fanno0 $fspeclst 2> /dev/null > /dev/null
     then
         fanno0=$(grep $fanno0 $fspeclst | head -n 1)
-        fanno0=$(dirname $0 | sed "s/sjcab_custom_atac/sjcab_std_anno_report/")/$fanno0
+        fanno0="$(dirname $0)/../annotations/$fanno0"
     fi
     if [ ! -s $fanno0 ]
     then

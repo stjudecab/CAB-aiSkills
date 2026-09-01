@@ -17,6 +17,7 @@ dependencies:
   - plotly
   - python-kaleido
   - xlsxwriter
+  - openpyxl
   - adjusttext
   - natsort
   - ucsc-liftover

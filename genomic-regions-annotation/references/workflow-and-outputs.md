@@ -18,7 +18,9 @@ input .bed/.vout
   -> voom2anno.sh
   -> <input>.anno
   -> annotateGenomicFeatures.py
-  -> feature-annotated .anno outputs
+  -> feature-annotated .anno outputs (FeatureAssignment + inGeneBody)
+  -> extractRegionsPerFeature.py
+  -> <input>.byFeature/ (feature BEDs, combined GMT, manifests)
 ```
 
 After all inputs are processed, the wrapper runs `OrganizeAnnotationResults.py` unless `--skip-organize` is set.
@@ -34,6 +36,11 @@ After all inputs are processed, the wrapper runs `OrganizeAnnotationResults.py` 
 | `--python-bin <path>` | Uses an explicit Python interpreter |
 | `--conda-prefix <path>` | Uses an existing Conda environment prefix |
 | `--create-conda-env` | Creates `--conda-env` from `--conda-yaml` when missing |
+| `--gene-body-annotation off` | Skip `inGeneBody` annotation in annotateGenomicFeatures.py |
+| `--skip-feature-extraction` | Skip extractRegionsPerFeature.py |
+| `--fdr-threshold 0.05` | FDR cutoff for voom-mode feature extraction |
+| `--log2fc-threshold 0.0` | Absolute log2FC cutoff for voom-mode feature extraction |
+| `--skip-organize` | Do not run OrganizeAnnotationResults.py |
 
 The default Conda environment name is `epi_anno_env`; the default YAML is `environment/epi_anno_env.yml`.
 
@@ -46,7 +53,12 @@ The wrapper appends a UTC timestamp suffix to the final component of `--out-dir`
 |-- finalReports/
 |-- allOtherFiles/
 |-- bedFileAnnotations/
-`-- GenomicFeaturesAnnotation/
+|-- GenomicFeaturesAnnotation/
+`-- <input>.byFeature/            # per-input feature BEDs + GMT (default)
+    |-- *.bed or *.up.bed / *.down.bed
+    |-- *.byFeature.genesets.gmt
+    |-- extraction_manifest.json
+    `-- extraction_manifest.tsv
 ```
 
 The default output root is `annotation_output`, producing paths like:
@@ -60,7 +72,10 @@ annotation_output-20260615T180000Z/
 Depending on input type and downstream organization results, outputs can include:
 
 - Nearby-gene annotated `*.anno` tables
-- Genomic feature annotation tables
+- Genomic feature annotation tables with `FeatureAssignment` and `inGeneBody`
+- Per-feature BED exports under `<input>.byFeature/`
+- Combined GMT gene-set files (`*.byFeature.genesets.gmt`)
+- Feature extraction manifests (`extraction_manifest.json`, `extraction_manifest.tsv`)
 - Excel annotation workbooks
 - BED exports
 - GMT files for GSEA-style downstream analysis
@@ -79,9 +94,10 @@ After a run:
 1. Confirm the timestamped output directory exists.
 2. Confirm every input has a corresponding staged file in the output/work directory.
 3. Confirm every input produced a non-empty `*.anno` file unless `--skip-existing-anno` intentionally skipped it.
-4. Confirm `finalReports/` exists when organization was not skipped.
-5. Inspect stderr or terminal output for failed helper commands.
-6. For publication/reporting, record `--genome`, TSS annotation file, `--feature-anno-dir` if used, and runtime environment choice.
+4. Confirm `<input>.byFeature/` exists with BED/GMT outputs unless `--skip-feature-extraction` was used.
+5. Confirm `finalReports/` exists when organization was not skipped.
+6. Inspect stderr or terminal output for failed helper commands.
+7. For publication/reporting, record `--genome`, TSS annotation file, `--feature-anno-dir` if used, gene-body setting, extraction thresholds, and runtime environment choice.
 
 ## Troubleshooting cues
 

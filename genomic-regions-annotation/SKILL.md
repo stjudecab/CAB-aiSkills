@@ -19,9 +19,9 @@ compatibility: >-
   chromatin runs write under agentResults/genomic-regions-annotation-<runId>/.
 metadata:
   author: Hasan Al Reza <hasan.al.reza.bd@gmail.com>; Wojciech Rosikiewicz <rosikiewicz@gmail.com>
-  version: "1.2.0"
+  version: "1.3.1"
   status: stable
-  last_reviewed: "2026-07-13"
+  last_reviewed: "2026-09-01"
 allowed-tools: shell python
 ---
 
@@ -32,8 +32,9 @@ allowed-tools: shell python
 Annotate epigenetic genomic regions in three complementary modes:
 
 1. **Nearby genes** (`voom2anno.sh`)
-2. **Genomic features** (`annotateGenomicFeatures.py`) with report aggregation (`OrganizeAnnotationResults.py`)
-3. **Chromatin states** (`prepare_chromatin_model.py` + `BEDinContext.py`) — separate branch; do **not** run OrganizeAnnotationResults
+2. **Genomic features** (`annotateGenomicFeatures.py`) including **gene-body overlap** (`inGeneBody`) with report aggregation (`OrganizeAnnotationResults.py`)
+3. **Per-feature BED + GMT export** (`extractRegionsPerFeature.py`) — enabled by default in Workflow A after feature annotation
+4. **Chromatin states** (`prepare_chromatin_model.py` + `BEDinContext.py`) — separate branch; do **not** run OrganizeAnnotationResults
 
 Methods details: [methods-gene-annotation.md](references/methods-gene-annotation.md), [methods-genomic-features.md](references/methods-genomic-features.md), [methods-chromatin-states.md](references/methods-chromatin-states.md).
 
@@ -80,8 +81,10 @@ python run_genomic_regions_annotation.py \
   --run
 ```
 
-4. Flow: `voom2anno.sh` → `annotateGenomicFeatures.py` → `OrganizeAnnotationResults.py`
+4. Flow: `voom2anno.sh` → `annotateGenomicFeatures.py` → `extractRegionsPerFeature.py` → `OrganizeAnnotationResults.py`
 5. See [workflow-and-outputs.md](references/workflow-and-outputs.md) and [input-formats-and-genomes.md](references/input-formats-and-genomes.md).
+
+Gene-body annotation (`inGeneBody`) and per-feature BED/GMT extraction are **on by default**. Disable with `--gene-body-annotation off` or `--skip-feature-extraction` on the wrapper.
 
 ## Workflow B — Chromatin states (separate branch)
 
@@ -132,7 +135,8 @@ Every chromatin (and preferably gene/feature) derived-artifact run must leave:
 |--------|------|
 | `run_genomic_regions_annotation.py` | Gene + feature pipeline wrapper |
 | `scripts/voom2anno.sh` | Nearby-gene annotation |
-| `scripts/annotateGenomicFeatures.py` | Exclusive genomic-feature assignment |
+| `scripts/annotateGenomicFeatures.py` | Exclusive genomic-feature assignment + gene-body overlap (`inGeneBody`) |
+| `scripts/extractRegionsPerFeature.py` | Per-feature BED files and combined GMT export |
 | `scripts/OrganizeAnnotationResults.py` | Reports / GSEA exports (gene/feature only) |
 | `scripts/prepare_chromatin_model.py` | Download/preprocess/cache ChromHMM or Segway dense BED |
 | `scripts/BEDinContext.py` | Overlap peaks with chromatin states |

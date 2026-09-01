@@ -14,7 +14,9 @@
 
 Assign each genomic region to exactly one genomic context class (promoter, exon, intron, intergenic, and related classes). This provides a structural sanity check (for example H3K4me3 peaks should enrich at promoters; H3K36me3 at gene bodies).
 
-Implemented by `scripts/annotateGenomicFeatures.py` after gene annotation in the gene/feature branch.
+Implemented by `scripts/annotateGenomicFeatures.py` after gene annotation in the gene/feature branch. Gene-body overlap (`inGeneBody`) is added by default using reference BEDs from `annotations/`.
+
+Per-feature BED and GMT exports are produced by `scripts/extractRegionsPerFeature.py` (enabled by default in the wrapper after feature annotation).
 
 ## Scientific approach
 
@@ -59,7 +61,21 @@ Feature assignment GENCODE resource labels used historically for CAB peak annota
 
 ## Inputs and outputs
 
-Inputs are the `*.anno` tables from gene annotation (or compatible region tables). Outputs include feature-annotated tables and summary pie/bar plots consumed by `OrganizeAnnotationResults.py`.
+Inputs are the `*.anno` tables from gene annotation (or compatible region tables). Outputs include feature-annotated tables with `FeatureAssignment` and `inGeneBody`, summary pie/bar plots consumed by `OrganizeAnnotationResults.py`, and optional per-feature BED/GMT exports under `<input>.byFeature/`.
+
+### Gene-body annotation (`inGeneBody`)
+
+After exclusive feature assignment, peaks are overlapped with bundled gene-body BED references (`annotations/AllGenes.*.feature_body.bed`) using pybedtools. Overlapping gene symbols are listed comma-separated in `inGeneBody`; regions with no overlap receive `.`.
+
+Supported genomes: `hg38`, `hg19`, `mm10` (and `hg38_rDNA` when passed explicitly to annotateGenomicFeatures.py).
+
+### Per-feature extraction
+
+`extractRegionsPerFeature.py` groups annotated peaks by `FeatureAssignment` and writes:
+
+- **BED mode** (non-differential inputs): one `<feature>.bed` per feature
+- **Voom mode** (differential inputs): `<feature>.up.bed` and `<feature>.down.bed` after FDR/log2FC filtering
+- One combined GMT with deduplicated gene sets parsed from `inGeneBody`
 
 ## Manuscript methods text
 

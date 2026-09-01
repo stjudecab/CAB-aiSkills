@@ -47,6 +47,16 @@ Hidden files are skipped. Files ending in `.anno` are skipped to avoid reprocess
 | `mm9` | `gencode.vM17.mm9.gtf.bed.tss` |
 | `sacCer3` | `sacCer3.shiftedBy125.flank375.bed.tss` |
 
+Gene-body references for `inGeneBody` annotation (`annotateGenomicFeatures.py`):
+
+| Genome | Gene-body BED file |
+|--------|---------------------|
+| `hg38`, `hg38_rDNA` | `AllGenes.hg38_v31.level_gene.feature_body.bed` |
+| `hg19` | `AllGenes.hg19_v19.level_gene.feature_body.bed` |
+| `mm10` | `AllGenes.mm10_vM22.level_gene.feature_body.bed` |
+
+These live at the top level of `--annotations-dir` alongside the TSS files.
+
 ## Annotation resource checks
 
 Before running, validate:
@@ -55,6 +65,7 @@ Before running, validate:
 2. The TSS file for `--genome` exists under `--annotations-dir`.
 3. The feature annotation directory exists. By default this is `--annotations-dir`; use `--feature-anno-dir` only for a compatible alternate resource root.
 4. Feature annotation subdirectories exist for the selected genome.
+5. When gene-body annotation is enabled, the gene-body BED for `--genome` exists under `--annotations-dir`.
 
 Expected feature files for human/mouse genomes:
 

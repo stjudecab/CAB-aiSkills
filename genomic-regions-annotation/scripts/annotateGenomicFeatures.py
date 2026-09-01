@@ -29,7 +29,7 @@ import sys
 import logging
 import inspect
 import argparse
-if not any(arg in ("-h", "--help") for arg in sys.argv[1:]):
+if not "-h" in sys.argv:
     import os
     import glob
     from pathlib import Path
@@ -51,6 +51,16 @@ if not any(arg in ("-h", "--help") for arg in sys.argv[1:]):
     from matplotlib.backends.backend_pdf import PdfPages
     #from adjustText import adjust_text
 
+    SCRIPT_DIR = Path(__file__).resolve().parent
+    GENE_BODY_ANNO_DIR = SCRIPT_DIR.parent / "annotations"
+    GENE_BODY_BED_BY_GENOME = {
+        "hg38": "AllGenes.hg38_v31.level_gene.feature_body.bed",
+        "hg38_rDNA": "AllGenes.hg38_v31.level_gene.feature_body.bed",
+        "hg19": "AllGenes.hg19_v19.level_gene.feature_body.bed",
+        "mm10": "AllGenes.mm10_vM22.level_gene.feature_body.bed",
+    }
+    GENE_BODY_COLUMN = "inGeneBody"
+
 def parseArgs():
     logger1 = logging.getLogger(inspect.currentframe().f_code.co_name)
     parser = argparse.ArgumentParser(description="This peak annotation script was intended to be used on the output of the voom2anno.sh script (aka. *.anno file). More details in the header of the script. The example command:\npython ~/programs/GIT/sjcab_std_report/sjcab_custom_atac/annotateGenomicFeatures.py -i test.vout.anno -g hg19\n\nExample usage in 'plotHeatmap' mode:\npython ~/programs/GIT/sjcab_std_report/sjcab_custom_atac/annotateGenomicFeatures.py -i GenomicFeaturesAnnotation/GenomicFeaturesAnnotation.summary.manual.tsv -m plotHeatmap")
@@ -62,6 +72,7 @@ def parseArgs():
     parser.add_argument("-fl", "--featureLabels", help="*.labels.lst file (with one label per row) located under 'annoPath' path or comma-separated list of labels for the reference BED files. By default = 'Promoter.Up,Promoter.Down,Exon,Intron,TES (transcription end sites),Dis5 (5' distal regions),Dis3 (3' distal regions),Intergenic'", default="Promoter.Up,Promoter.Down,Exon,Intron,TES (transcription end sites),Dis5 (5' distal regions),Dis3 (3' distal regions),Intergenic", action="store", type=str, required=False, dest="featureLabels")
     parser.add_argument("-t", "--tmpDir", help="the name of the temporary directory (i.e. directory where a backup of the oryginal anno file will be stored just in case). By default = 'tmp_GenomicFeaturesAnnotation'", default="tmp_GenomicFeaturesAnnotation", action="store", type=str, required=False, dest="tmpDir")
     parser.add_argument("-m", "--mode", help="Mode of the program. Options are 'auto', which will conduct annotation of the *.anno file, automatically detecting the sub-mode of 'BED_format' or 'VOUT_format'; or the 'plotHeatmap' mode, which might be used to plot the heatmap of the data pointed to by 'infileName' (-i flag). This second mode is mainly for manual posprocessing, for example when one was analyzing multiple files in the 'BED_format' and wish to visualize their biases in a nice way. Also, the name of the differential categories (i.e. contents of the 'Category' column') will be used, as the assumption is that one manually set these names to be 'nice'. By default = 'auto'", default="auto", action="store", type=str, required=False, dest="mode", choices=['auto','plotHeatmap','VOUT_format_1on1','VOUT_format', 'VOUT_format_meth', 'VOUT_format_meth_1on1', "BED_format"])
+    parser.add_argument("--geneBodyAnnotation", help="Annotate overlapping gene bodies in the inGeneBody column using pybedtools and reference BED files from ../annotations/. By default = 'on'.", default="on", action="store", type=str, required=False, dest="geneBodyAnnotation", choices=["on", "off"])
 
     args = parser.parse_args()
 
@@ -74,6 +85,7 @@ def parseArgs():
     featureLabels = args.featureLabels
     tmpDir = args.tmpDir
     mode = args.mode
+    geneBodyAnnotation = args.geneBodyAnnotation
 
     configureLogging(analysisPrefix)
     logger1.info("command used to run annotation script: python {}".format(' '.join(str(x) for x in sys.argv)))
@@ -86,6 +98,7 @@ def parseArgs():
     logger1.info("featureLabels: {}".format(featureLabels))
     logger1.info("tmpDir: {}".format(tmpDir))
     logger1.info("mode: {}".format(mode))
+    logger1.info("geneBodyAnnotation: {}".format(geneBodyAnnotation))
 
 
     if features.endswith(".lst") and featureLabels.endswith(".labels.lst"):
@@ -111,9 +124,9 @@ def parseArgs():
             logger1.error("labels lst file listed the following region labels (in the order of priority): {}".format(', '.join(str(x) for x in labelsTMP)))
             logger1.error("The lengths of the above do not match, Program was aborted.")
             exit()
-        return analysisPrefix, genome, annoPath, infileName, columnHeader, featuresTMP, labelsTMP, tmpDir, mode
+        return analysisPrefix, genome, annoPath, infileName, columnHeader, featuresTMP, labelsTMP, tmpDir, mode, geneBodyAnnotation
     elif len(features.split(",")) == len(featureLabels.split(",")):
-        return analysisPrefix, genome, annoPath, infileName, columnHeader, features.split(","), featureLabels.split(","), tmpDir, mode
+        return analysisPrefix, genome, annoPath, infileName, columnHeader, features.split(","), featureLabels.split(","), tmpDir, mode, geneBodyAnnotation
     else:
         logger1.error("the length of features ({}) and featureLabels ({}) is not matching, or two lst files were not provided. The program has been aborted.".format(features.split(","), featureLabels.split(",")))
         exit()
@@ -151,6 +164,68 @@ def annotateFeatures(df, features, featuresDict, labelsDict):
         regions = regions.subtract(featuresDict[feature], A=True)
         logger1.info("Feature {} completed.".format(feature) )
     logger1.info("Annotated {} out of {} regions.".format(len(regionsAnno), len(regionsRaw) ))
+    return regionsAnno
+
+def resolveGeneBodyBed(genome):
+    logger1 = logging.getLogger(inspect.currentframe().f_code.co_name)
+    bedName = GENE_BODY_BED_BY_GENOME.get(genome)
+    if bedName is None:
+        logger1.warning(
+            "Gene body annotation requested but genome '{}' is not supported for inGeneBody. "
+            "Supported genomes: {}. Proceeding without inGeneBody column.".format(
+                genome, ", ".join(sorted(GENE_BODY_BED_BY_GENOME.keys()))
+            )
+        )
+        return None
+    bedPath = GENE_BODY_ANNO_DIR / bedName
+    if not bedPath.is_file():
+        logger1.warning(
+            "Gene body annotation requested but reference file does not exist: {}. "
+            "Proceeding without inGeneBody column.".format(bedPath)
+        )
+        return None
+    logger1.info("Gene body reference for genome '{}': {}".format(genome, bedPath))
+    return str(bedPath)
+
+def annotateGeneBody(df, geneBodyBed):
+    logger1 = logging.getLogger(inspect.currentframe().f_code.co_name)
+    regionsRaw = list(df['Region'])
+    regionsProcessed = ""
+    regionsDict = {}
+    for region in regionsRaw:
+        txtBed = "{}\t{}\t{}\n".format(region.split(":")[0], region.split(":")[1].split("-")[0], region.split(":")[1].split("-")[1])
+        regionsDict[txtBed.strip()] = region
+        regionsProcessed += txtBed
+    regions = BedTool(regionsProcessed, from_string=True)
+    overlaps = regions.intersect(geneBodyBed, wa=True, wb=True)
+    regionGenes = {}
+    for hit in overlaps:
+        peakKey = "\t".join(hit.fields[0:3])
+        region = regionsDict.get(peakKey)
+        if region is None:
+            continue
+        geneName = hit.fields[6]
+        if region not in regionGenes:
+            regionGenes[region] = set()
+        regionGenes[region].add(geneName)
+    regionsAnno = {}
+    for region in regionsRaw:
+        if region in regionGenes and len(regionGenes[region]) > 0:
+            regionsAnno[region] = ", ".join(sorted(regionGenes[region]))
+        else:
+            regionsAnno[region] = "."
+    nWithOverlap = 0
+    nWithoutOverlap = 0
+    for value in regionsAnno.values():
+        if value != ".":
+            nWithOverlap += 1
+        else:
+            nWithoutOverlap += 1
+    logger1.info(
+        "Gene body annotation completed: {} regions with overlap, {} without overlap.".format(
+            nWithOverlap, nWithoutOverlap
+        )
+    )
     return regionsAnno
 
 def generateSummary(df, columnHeader, infileName, labelsDict, features, analysisPrefix, resultsDir, tmpDir, category, description):
@@ -402,7 +477,7 @@ def getCategories(mode):
         exit()
 
 def main():
-    analysisPrefix, genome, annoPath, infileName, columnHeader, features, featureLabels, tmpDir, mode = parseArgs()
+    analysisPrefix, genome, annoPath, infileName, columnHeader, features, featureLabels, tmpDir, mode, geneBodyAnnotation = parseArgs()
 
     if mode in [ 'auto', 'VOUT_format_1on1', 'VOUT_format_meth_1on1', 'VOUT_format_meth', "BED_format", "VOUT_format" ]:
         ### create the directory to back up the *anno files:
@@ -439,16 +514,30 @@ def main():
             else:
                 logging.error("{} annotation file does not exist.".format(file))
 
-        ### check if the file was not already annotated, if yes, abort:
+        ### annotate genomic features and/or gene bodies:
         columns = set(list(df))
+        annotated = False
         if columnHeader in columns:
-            logging.warning("{} file was already annotated, as emphasized by the presence of '{}' column. Skipping the annotation part.".format(infileName, columnHeader))
+            logging.warning("{} file was already annotated, as emphasized by the presence of '{}' column. Skipping the FeatureAssignment annotation part.".format(infileName, columnHeader))
         else:
-            ### annotate features:
             regionsAnno = annotateFeatures(df, features, featuresDict, labelsDict)
-
             df[columnHeader] = df['Region'].apply(lambda region: regionsAnno[region] if region in regionsAnno else False) ### adding exception handling here, because sometimes when for example the regions are in some alternative chromosome (e.g. chr10_GL383545v1_alt), which is not in the reference annotations, then its impossible to align them to genomic contexts, and its also not correct to assign them to "intergenic" either. Those cases will have "False" status.
+            annotated = True
 
+        if geneBodyAnnotation == "on":
+            if GENE_BODY_COLUMN in columns:
+                logging.warning("{} file was already annotated, as emphasized by the presence of '{}' column. Skipping the gene body annotation part.".format(infileName, GENE_BODY_COLUMN))
+            else:
+                geneBodyBedPath = resolveGeneBodyBed(genome)
+                if geneBodyBedPath is not None:
+                    geneBodyBed = BedTool(geneBodyBedPath)
+                    regionsGeneBody = annotateGeneBody(df, geneBodyBed)
+                    df[GENE_BODY_COLUMN] = df['Region'].apply(lambda region: regionsGeneBody.get(region, "."))
+                    annotated = True
+        else:
+            logging.info("Gene body annotation disabled (--geneBodyAnnotation off).")
+
+        if annotated:
             ### move original *anno file to tmpDir:
             command = "mv {0} {1}/{0}.raw_bcp".format(os.path.basename(infileName), tmpDir)
             subprocess.Popen(command, shell=True, stdout=subprocess.PIPE).stdout.read()

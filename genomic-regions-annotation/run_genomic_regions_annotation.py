@@ -15,10 +15,11 @@ Run St. Jude/CAB-style genomic region annotation for .bed, .bed.gz, and .vout in
 
 For each .bed, .bed.gz, or .vout input file in an input directory, this wrapper runs:
   1. voom2anno.sh
-  2. annotateGenomicFeatures.py
+  2. annotateGenomicFeatures.py (FeatureAssignment + inGeneBody by default)
+  3. extractRegionsPerFeature.py (feature BEDs + combined GMT by default)
 
 After all BED files are processed, it optionally runs:
-  3. OrganizeAnnotationResults.py
+  4. OrganizeAnnotationResults.py
 
 The wrapper can also create/use a conda environment from a YAML file and
 execute all tasks with that environment's Python and PATH.
@@ -125,6 +126,27 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--create-conda-env", action="store_true", help="Create the conda environment from --conda-yaml if it is missing.")
     parser.add_argument("--use-current-python", action="store_true", help="Use the current Python interpreter and current PATH instead of a conda environment.")
     parser.add_argument("--skip-existing-anno", action="store_true", help="Skip voom2anno.sh if INPUT.anno already exists in --out-dir.")
+    parser.add_argument(
+        "--gene-body-annotation",
+        choices=["on", "off"],
+        default="on",
+        help="Pass --geneBodyAnnotation to annotateGenomicFeatures.py. Default: on.",
+    )
+    parser.add_argument(
+        "--skip-feature-extraction",
+        action="store_true",
+        help="Do not run extractRegionsPerFeature.py after genomic feature annotation.",
+    )
+    parser.add_argument(
+        "--fdr-threshold",
+        default="0.05",
+        help="FDR threshold passed to extractRegionsPerFeature.py in voom mode. Default: 0.05.",
+    )
+    parser.add_argument(
+        "--log2fc-threshold",
+        default="0.0",
+        help="Absolute log2FC threshold passed to extractRegionsPerFeature.py in voom mode. Default: 0.0.",
+    )
     parser.add_argument("--skip-organize", action="store_true", help="Do not run OrganizeAnnotationResults.py after per-BED annotation.")
     parser.add_argument("--dry-run", action="store_true", help="Print commands and validate inputs without running them.")
     parser.add_argument("--run", action="store_true", help="Actually run the pipeline. Without --run, this behaves like a dry run.")
@@ -222,12 +244,13 @@ def resolve_layout(scripts_dir: Path, annotations_dir: Path,) -> tuple[Path, Pat
     return scripts_dir, annotations_dir
 
 
-def resolve_scripts(scripts_dir: Path) -> tuple[Path, Path, Path]:
+def resolve_scripts(scripts_dir: Path) -> tuple[Path, Path, Path, Path]:
     scripts_dir = validate_dir(scripts_dir, "Script directory")
     voom2anno = validate_file(scripts_dir / "voom2anno.sh", "voom2anno.sh")
     annotate_script = validate_file(scripts_dir / "annotateGenomicFeatures.py", "annotateGenomicFeatures.py")
-    organize_script = validate_file(scripts_dir / "OrganizeAnnotationResults.py", "OrganizeAnnotationResults.py")
-    return voom2anno, annotate_script, organize_script
+    extract_script = validate_file(scripts_dir / "extractRegionsPerFeature.py", "extractRegionsPerFeature.py")
+    organize_script = validate_file(scripts_dir / "OrganizeAnnotationResults.py", "organizeAnnotationResults.py")
+    return voom2anno, annotate_script, extract_script, organize_script
 
 
 def resolve_tss_annotation(genome: str, anno_report_dir: Path) -> Path:
@@ -548,6 +571,7 @@ def run_annotation_for_input(
     args: argparse.Namespace,
     voom2anno: Path,
     annotate_script: Path,
+    extract_script: Path,
     tss_annotation: Path,
     feature_annotation_dir: Path,
     python_bin: str,
@@ -571,8 +595,36 @@ def run_annotation_for_input(
         ]
         run_command(voom_cmd, cwd=input_file.parent, dry_run=dry_run, env=runtime_env)
 
-    annotate_cmd = [python_bin, str(annotate_script), "-i", anno_file.name, "-g", args.genome, "-a", str(feature_annotation_dir),]
+    annotate_cmd = [
+        python_bin,
+        str(annotate_script),
+        "-i",
+        anno_file.name,
+        "-g",
+        args.genome,
+        "-a",
+        str(feature_annotation_dir),
+        "--geneBodyAnnotation",
+        args.gene_body_annotation,
+    ]
     run_command(annotate_cmd, cwd=input_file.parent, dry_run=dry_run, env=runtime_env)
+
+    if not args.skip_feature_extraction:
+        extract_cmd = [
+            python_bin,
+            str(extract_script),
+            "-i",
+            anno_file.name,
+            "--mode",
+            "auto",
+            "--fdrThreshold",
+            str(args.fdr_threshold),
+            "--log2FCThreshold",
+            str(args.log2fc_threshold),
+        ]
+        run_command(extract_cmd, cwd=input_file.parent, dry_run=dry_run, env=runtime_env)
+        info(f"Feature extraction requested for {anno_file.name}")
+
     info(f"{input_file.name} FIN ({input_kind} input, voom2anno mode: {voom_mode})")
 
 
@@ -585,7 +637,7 @@ def main() -> None:
     out_dir = ensure_out_dir(args.out_dir, run_id)
     scripts_dir, annotations_dir = resolve_layout(args.scripts_dir, args.annotations_dir,)
 
-    voom2anno, annotate_script, organize_script = resolve_scripts(
+    voom2anno, annotate_script, extract_script, organize_script = resolve_scripts(
         scripts_dir
     )
 
@@ -635,6 +687,15 @@ def main() -> None:
 
     info(f"TSS annotation: {tss_annotation}")
     info(f"Feature annotation directory: {feature_annotation_dir}")
+    info(f"Gene body annotation: {args.gene_body_annotation}")
+    info(f"Feature extraction: {'disabled' if args.skip_feature_extraction else 'enabled'}")
+    if not args.skip_feature_extraction:
+        info(
+            "Feature extraction thresholds: FDR < {}, |log2FC| > {}".format(
+                args.fdr_threshold,
+                args.log2fc_threshold,
+            )
+        )
 
     if dry_run:
         info("Dry-run mode: commands will be printed but not executed. Add --run to execute.")
@@ -648,6 +709,7 @@ def main() -> None:
             args=args,
             voom2anno=voom2anno,
             annotate_script=annotate_script,
+            extract_script=extract_script,
             tss_annotation=tss_annotation,
             feature_annotation_dir=feature_annotation_dir,
             python_bin=python_bin,
